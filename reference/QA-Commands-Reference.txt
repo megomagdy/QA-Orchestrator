@@ -1,0 +1,303 @@
+═══════════════════════════════════════════════════════════════
+  QA Slash Commands — Quick Reference
+  Last Updated: 2026-07-08 (portable, tool-agnostic edition)
+═══════════════════════════════════════════════════════════════
+
+
+PHASE 1: REVIEW & GAP ANALYSIS
+───────────────────────────────
+
+  /review [feature-name]
+  ─────────────────────
+  Cross-reviews PRD, User Stories, and design files against each
+  other to find real gaps, conflicts, and ambiguities. Uses a
+  two-pass self-verification system to eliminate false gaps (questions
+  already answered in the documents). Also checks for missing security,
+  accessibility, and validation requirements using OWASP, axe-core,
+  and form-validation-breaker skills.
+  Output: Structured list of blocking questions, observations,
+  confirmed behaviors, and foundational rules.
+
+
+  /gap-report-doc [feature-name]
+  ──────────────────────────────
+  Takes the findings from /review and generates a professional Word
+  document (.docx) for your personal review before sharing with the
+  product team. Questions are color-coded by priority (CRITICAL = red,
+  HIGH = orange, MEDIUM = yellow). Includes executive summary,
+  cross-review statistics, and confirmed behaviors.
+  Output: QA-Review-Report-[feature]-[date].docx
+
+
+  /gap-report-push [feature-name]
+  ───────────────────────────────
+  After you review and approve the gap report doc, this command pushes
+  all confirmed questions into your team's Open Questions tracker —
+  whatever platform the workspace config specifies (Notion database,
+  Confluence page, Azure DevOps wiki, SharePoint list, ...). Uses a
+  standard schema (Question ID, Question, Epic, Priority, Affected
+  Stories, Category, Answer, Status). Checks for duplicates before
+  pushing and requires your explicit confirmation.
+  Output: Questions created in the tracker with "Unanswered" status.
+
+
+PHASE 2: TEST CASE DESIGN
+──────────────────────────
+
+  /write-tests [epic-key or feature-name]
+  ───────────────────────────────────────
+  Generates comprehensive test cases after all review questions are
+  answered. Covers 10 categories: happy path, positive, negative,
+  corner/boundary, edge cases, integration, auth/permission,
+  localization (incl. RTL where applicable), accessibility (WCAG 2.1),
+  and security (OWASP). Uses SFDP decomposition, equivalence
+  partitioning, boundary value analysis, and decision tables. Follows
+  your TC ID convention (E{epic#}-{type}-{seq}). Will NOT start if
+  investigation gaps are unresolved.
+  Output: Two files — Markdown (for review) + Excel (importable into
+  your test management tool, matching its template).
+
+
+  /cross-validate [TC file or feature-name]
+  ──────────────────────────────────────────
+  Audits generated test cases against QC decisions, PRD, user stories,
+  and design files. Catches contradictions in expected results, validation
+  timing errors (the #1 mistake pattern), linked-state blocking
+  violations, ghost UI elements, missing boundary values, missing auth
+  coverage, and missing accessibility coverage.
+  Output: Contradiction report with verdict (CLEAN / NEEDS CORRECTION /
+  MAJOR ISSUES).
+
+
+PHASE 3: AUTOMATION
+───────────────────
+
+  /scaffold-automation [feature-name]
+  ───────────────────────────────────
+  Sets up a complete Playwright automation framework for a feature.
+  Builds: Page Object Model (base + concrete pages), custom fixtures
+  with auth state reuse, multi-environment config (local/staging/prod),
+  E2E specs, API test specs, accessibility test specs, security test
+  specs, payload generator utility, CI pipeline config (GitHub Actions
+  or Azure DevOps). Only scaffolds TCs marked as automation candidates.
+  Asks you setup questions before building.
+  Output: Full project structure with config, page objects, spec files,
+  utilities, and CI workflow.
+
+
+  /run-automation [spec-file, tag, or "all"]
+  ──────────────────────────────────────────
+  Executes the Playwright test suite. Supports running all tests, a
+  specific spec file, an epic, a TC ID, or tagged tests (@smoke,
+  @regression, @security, @a11y). Runs pre-flight checks (Playwright
+  installed? browsers ready? .env configured?), categorizes failures
+  (test logic error, locator broken, timing issue, environment issue,
+  flaky, actual bug), and produces a structured execution summary with
+  pass rate and suggested next actions.
+  Output: Execution report with failure analysis and HTML report.
+
+
+PHASE 4: MANUAL & MCP EXECUTION
+────────────────────────────────
+
+  /execute-tc [TC-ID or "all" or epic-name]
+  ──────────────────────────────────────────
+  Executes test cases via Chrome MCP (browser control). The key
+  feature is a 5-step popup recovery protocol: before marking any
+  test as failed, Claude tries close button → cancel button → Escape
+  key → click outside → assess if popup is part of the flow. Only
+  marks as BLOCKED (not FAILED) if all recovery fails. Includes
+  iOS/mobile-specific handling (touch, keyboard overlay, dropdown
+  rendering on WebKit). Screenshots every key step. Classifies
+  results as PASS, FAIL (actual bug only), or BLOCKED (obstacle).
+  Confirmed bugs are appended to Manual Execution/Bug Summaries.txt
+  with evidence saved per the folder convention, ready for
+  /report-bugs batch reporting.
+  Output: Execution report with failed TCs ready for /bug-report.
+
+
+PHASE 5: REPORTING
+──────────────────
+
+  /bug-report [bug-title or TC-ID]
+  ────────────────────────────────
+  Generates a tracker-ready bug report. Uses the title formula
+  "[Action] [Component] - [Symptom]" for clear, searchable titles.
+  Includes: severity classification (Critical/High/Major/Minor),
+  exact steps to reproduce, expected vs actual with source reference,
+  evidence (screenshots, console logs, network traces), reproducibility,
+  workaround, and isolation notes. Supports API bugs (full request/
+  response) and mobile bugs (device/OS/network details). Can auto-
+  populate from /execute-tc failures. Batch mode groups related
+  failures into single reports.
+  Output: Structured bug report for your issue tracker
+  (review → create → save).
+
+
+  /report-bugs [--setup]
+  ──────────────────────
+  Batch-reports bugs from the project's Manual Execution/ folder into
+  your issue tracker via a zero-token Node.js script with pluggable
+  tracker adapters (see scripts/adapters/_template.js). The workflow:
+  the QA engineer types bug one-liners into Manual Execution/
+  Bug Summaries.txt (under "Epic N:" sections) and drops evidence
+  into Epic N/ subfolders named "Bug {m}.png" / "Bug {m}.mp4"
+  (" (2)" suffix for extra files; flat naming for small projects).
+  Claude writes polished summaries/descriptions and parent-story
+  mappings; the script creates the issues, auto-discovers each bug's
+  evidence files, and uploads them via the adapter's addAttachments()
+  (or lists them for manual attach). First run sets up per-project
+  config interactively.
+  Output: Created issues + attached evidence + [REPORTED: key]
+  markers in the bug file.
+
+
+SESSION MANAGEMENT
+──────────────────
+
+  /checkpoint [optional label]
+  ────────────────────────────
+  Saves the complete session context to a file before you step away.
+  Captures: all decisions made, findings, work completed, in-progress
+  items, blockers, next steps, and a "Critical Context" section
+  specifically designed to preserve the exact details that context
+  window compaction would normally lose (API endpoints, field names,
+  QC decision wording, error messages, etc.).
+  Output: checkpoint-[feature]-[date]-[label].md
+
+
+  /session-resume [filename or "latest"]
+  ──────────────────────────────────────
+  Loads a previous checkpoint file and restores full context. Shows
+  a summary of what was completed, what's in progress, and what the
+  next steps are. Checks for updates since last session (new answers
+  from product? new QC decisions? scope changes?). Re-applies the
+  skills that were active in the previous session.
+  Output: Restored context + "Ready to continue" prompt.
+
+
+REFERENCE & LEARNING
+────────────────────
+
+  /save-url [URL] [optional label]
+  ────────────────────────────────
+  Stores a reference URL (PRD, design files, Swagger, Jira epic, Notion page,
+  Confluence, GitHub repo, Postman collection, etc.) in a persistent
+  project-references.md file. Auto-detects URL type and categorizes it.
+  All saved URLs are available to every other command across all work
+  phases — no need to re-paste URLs every session. Supports batch mode
+  for adding multiple URLs at once. Checks for duplicates.
+  Output: Updated project-references.md.
+
+
+  /learn [learning description or empty for auto-detect]
+  ─────────────────────────────────────────────────────
+  Fully automatic — no questions asked. Documents new rules,
+  insights, defect patterns, and lessons learned into the
+  project's CLAUDE.md file. When called with a description,
+  documents that specific learning. When called empty, auto-scans
+  the current conversation for undocumented learnings (QC decisions,
+  bug patterns, user corrections, process improvements, tool quirks).
+  Automatically classifies the learning, places it in the correct
+  CLAUDE.md section, and immediately syncs a generalized version
+  to the master playbook template and condensed rules file. Also
+  runs automatically (without being called) when Claude detects
+  trigger patterns: user corrections, confirmed QC decisions,
+  discovered bug patterns, or "remember this" phrases.
+  Output: Brief one-line confirmation or silent if nothing to learn.
+
+
+  /sync-global [path-to-global-folder or empty to use saved path]
+  ────────────────────────────────────────────────────────────────
+  Syncs ALL generalized learnings from the current project back to
+  the global QA folder. Updates everything: playbook template,
+  condensed rules, command files, agent files, and support sections.
+  Generalizes project-specific content (replaces "Loans" → {MODULE},
+  "IS-5074" → {STORY_KEY}, etc.) so learnings benefit all future
+  projects. For commands and agents, shows diffs before overwriting.
+  Reads the global folder path from CLAUDE.md's "Global QA Folder"
+  section (set by /init-project). Can also run automatically after
+  /learn for individual learnings, or manually as a full batch sync
+  at the end of a project with "/sync-global".
+  Output: Updated global folder + sync confirmation report.
+
+
+OPTIMIZATION
+────────────
+
+  /cache-build [feature-name]
+  ──────────────────────────
+  Builds an investigation cache for a feature after /review completes.
+  Runs expensive analysis ONCE and saves structured output files
+  (confirmed behaviors, field inventory, state transitions, permission
+  matrix, question status, TC summary, DOM audit results) so that all
+  subsequent commands (/write-tests, /cross-validate, /scaffold-automation,
+  /execute-tc) can read the cached files instead of re-analyzing all
+  source documents from scratch. Reduces token usage by 60-70% on
+  follow-up commands for the same feature. Cache files include timestamps
+  and warn if older than 7 days.
+  Output: 4 cache files (investigation, questions, tc-summary, dom-audit).
+
+
+WORKSPACE & PROJECT SETUP
+─────────────────────────
+
+  /init-workspace
+  ───────────────
+  One-time setup per user/machine after copying the Global QA folder.
+  Sets the QA_GLOBAL_HOME environment variable, asks which issue
+  tracker / test management tool / docs platform / design tool your
+  team uses, and writes workspace.config.json. Optionally sets up a
+  bug-reporter tracker adapter and credentials (.env). All other
+  commands read their tool defaults from this config.
+  Output: workspace.config.json + QA_GLOBAL_HOME set.
+
+
+  /init-project [project-name]
+  ────────────────────────────
+  One-command setup for a new project. Creates the complete QA
+  infrastructure: CLAUDE.md from the QA Test Design Playbook template
+  (with skills mapping and caching rules appended), all skill
+  folders into .claude/skills/ (18 workflow commands + 16 technique
+  references), all 10 agent files into .claude/agents/,
+  qa-rules-condensed.md, an empty project-references.md, and the
+  Manual Execution/ folder seeded with a Bug Summaries.txt template
+  (the manual-testing workspace used by /report-bugs). Then
+  walks you through 13 interactive questions to fill in all
+  {PLACEHOLDER} values in the CLAUDE.md (project name, architecture
+  principle, quality principle, compliance concerns, issue tracker
+  keys, test tool, design file links, PRD links, etc.). Automatically
+  registers any URLs provided during setup into project-references.md.
+  Output: Fully configured project ready for /save-url and /review.
+
+
+═══════════════════════════════════════════════════════════════
+  TYPICAL WORKFLOW ORDER
+═══════════════════════════════════════════════════════════════
+
+  FIRST TIME ON THIS MACHINE:
+  -1. /init-workspace → Configure your tools + QA_GLOBAL_HOME (once)
+
+  NEW PROJECT:
+  0. /init-project   → Set up full QA infrastructure for a new project
+
+  EXISTING PROJECT:
+  1. /save-url      → Register all project reference URLs
+  2. /review        → Cross-review all documents
+  3. /cache-build   → Cache investigation results (saves 60-70% tokens)
+  4. /gap-report-doc → Generate Word report for your review
+  5. /gap-report-push → Push approved questions to your questions tracker
+  6. [Wait for product answers]
+  7. /write-tests   → Generate comprehensive test cases
+  8. /cache-build   → Cache TC summary (optional, for large features)
+  9. /cross-validate → Audit test cases for contradictions
+  10. /scaffold-automation → Set up Playwright framework
+  11. /run-automation → Execute automated tests
+  12. /execute-tc   → Execute tests via Chrome MCP
+  13. /bug-report or /report-bugs → Report defects to your issue tracker
+  14. /learn        → Document any new rules/insights
+  15. /sync-global   → Sync learnings to global folder (auto or manual)
+  16. /checkpoint   → Save session before stepping away
+  17. /session-resume → Pick up where you left off
+
+═══════════════════════════════════════════════════════════════

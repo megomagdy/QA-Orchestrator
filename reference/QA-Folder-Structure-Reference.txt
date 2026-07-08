@@ -1,0 +1,271 @@
+═══════════════════════════════════════════════════════════════
+  QA Infrastructure — Folder Structure Reference
+  Last Updated: 2026-07-08 (portable, tool-agnostic edition)
+═══════════════════════════════════════════════════════════════
+
+
+1. GLOBAL FOLDER (Master Copy — One on your machine)
+════════════════════════════════════════════════════
+
+Location: Wherever you choose — the path is stored in the QA_GLOBAL_HOME
+          environment variable, set once by /init-workspace
+          (e.g., C:\Users\you\QA-Global or ~/qa-global)
+Purpose: Source of truth. /init-workspace configures it once per user.
+         /init-project copies FROM here.
+         /sync-global pushes BACK to here.
+
+QA-Global/
+│
+├── README.md                                 ← Start here: quick start,
+│                                               sharing rules, design notes
+│
+├── workspace.config.json                     ← YOUR tools (tracker, test
+│                                               tool, docs platform) —
+│                                               created by /init-workspace
+│                                               (not shipped; per user)
+│
+├── templates/
+│   ├── QA_Test_Design_Playbook_-_Template.md ← Master playbook template
+│   │                                            with {PLACEHOLDER} values
+│   │                                            Updated by /sync-global
+│   ├── qa-rules-condensed.md                 ← All skills condensed to
+│   │                                            essential rules only
+│   │                                            Updated by /sync-global
+│   ├── CLAUDE-md-skills-section.md           ← Skills → workflow mapping
+│   │                                            Appended to CLAUDE.md
+│   │                                            during /init-project
+│   ├── CLAUDE-md-caching-section.md          ← Token optimization rules
+│   │                                            Appended to CLAUDE.md
+│   │                                            during /init-project
+│   └── qmetry-template.xlsx                  ← EXAMPLE test-tool import
+│                                                template (Qmetry format,
+│                                                sanitized sample data).
+│                                                Register YOUR tool's real
+│                                                template via /init-workspace
+│
+├── scripts/
+│   ├── report-bugs.js                        ← Tracker-agnostic bug reporter
+│   ├── report-bugs-README.txt                ← Script command reference
+│   ├── .env.example                          ← Credential template (copy
+│   │                                            to .env — never share .env)
+│   └── adapters/
+│       └── _template.js                      ← Adapter contract + skeleton:
+│                                                copy to <tracker>.js and
+│                                                implement createIssue()
+│
+├── reference/                                ← Human-readable documentation
+│   ├── QA-Commands-Reference.txt               (this file and its siblings)
+│   ├── QA-Agents-Reference.txt
+│   └── QA-Folder-Structure-Reference.txt
+│
+├── agents/                                   ← 10 subagent files
+│   ├── qa-reviewer.md                          (7 custom + 3 Playwright MCP)
+│   ├── tc-writer.md
+│   ├── bug-hunter.md
+│   ├── security-scanner.md
+│   ├── a11y-auditor.md
+│   ├── dom-auditor.md
+│   ├── api-tester.md
+│   ├── playwright-test-planner.md
+│   ├── playwright-test-generator.md
+│   └── playwright-test-healer.md
+│
+└── skills/                                   ← 34 skills, two kinds, all as
+    │                                           <name>/SKILL.md folders
+    │
+    │  WORKFLOW COMMANDS (18) — the /commands; each SKILL.md has
+    │  argument-hint + description frontmatter:
+    ├── init-workspace/     ├── init-project/      ├── save-url/
+    ├── review/             ├── gap-report-doc/    ├── gap-report-push/
+    ├── write-tests/        ├── cross-validate/    ├── cache-build/
+    ├── scaffold-automation/├── run-automation/    ├── execute-tc/
+    ├── bug-report/         ├── report-bugs/       ├── learn/
+    ├── checkpoint/         ├── session-resume/    └── sync-global/
+    │
+    │  TECHNIQUE REFERENCES (16) — methodology & framework knowledge:
+    ├── unified-qa/         ├── test-plan-generation/
+    ├── playwright-e2e-testing/  ├── playwright-enhanced/
+    ├── playwright-api-testing/  ├── form-validation-breaker/
+    ├── auth-bypass-tester/ ├── owasp-security-testing/
+    ├── axe-core-accessibility/  ├── bug-report-writing/
+    ├── api-testing-rest/   ├── postman-api-testing/
+    ├── appium-mobile-testing/   ├── ci-cd-pipeline-config/
+    ├── advanced-allure-reporting/
+    └── maestro-mobile-testing/
+
+    NOTE: there is NO separate commands/ folder — slash commands ARE
+    skill folders. /init-workspace installs them user-level
+    (~/.claude/skills/) so they work in any project folder.
+
+
+2. PROJECT FOLDER (Created by /init-project for each project)
+═════════════════════════════════════════════════════════════
+
+Location: e.g., C:\Users\you\Projects\MyModule
+Purpose: Working copy. All commands read/write HERE.
+         /sync-global pushes learnings back to global.
+
+MyModule/
+│
+├── CLAUDE.md                                 ← Project-specific playbook
+│                                               Created from template with
+│                                               {PLACEHOLDER} filled in
+│                                               + Skills section appended
+│                                               + Caching section appended
+│                                               + "Global QA Folder" path
+│                                               Updated by /learn
+│
+├── qa-rules-condensed.md                     ← Project copy (from global)
+│                                               Read by all commands
+│                                               Updated by /learn
+│                                               Pushed back by /sync-global
+│
+├── <test-tool>-template.xlsx                 ← Test tool import template
+│                                               Read by /write-tests
+│
+├── project-references.md                     ← URLs saved by /save-url
+│                                               (PRD, designs, tracker, API)
+│
+├── Manual Execution/                         ← Manual testing workspace
+│   │                                           (created by /init-project)
+│   ├── Bug Summaries.txt                     ← QA engineer types bug
+│   │                                           one-liners here, under
+│   │                                           "Epic N:" sections.
+│   │                                           Read by /report-bugs;
+│   │                                           [REPORTED: key] appended
+│   │                                           after reporting
+│   ├── Epic 1/                               ← Evidence per epic:
+│   │   ├── Bug 5.png                           screenshots/recordings
+│   │   ├── Bug 11.mp4                          named "Bug {m}.*"
+│   │   └── Bug 13 (2).png                      (" (2)" = extra file)
+│   ├── Epic 2/                                 Small projects: evidence
+│   │                                           flat in Manual Execution/
+│   ├── bug-reporter.config.json              ← /report-bugs project config
+│   ├── bug-overrides.json                    ← Per-bug parent/priority
+│   ├── bug-descriptions.json                 ← Claude-polished summaries
+│   └── reported-bugs.json                    ← Tracking (script-managed)
+│
+├── .claude/
+│   ├── skills/                               ← skill folders copied from
+│   │   ├── review/SKILL.md                     global skills/ by
+│   │   ├── write-tests/SKILL.md                /init-project (workflow
+│   │   ├── report-bugs/SKILL.md                commands + technique
+│   │   ├── ... (all 34 skill folders)          references). May be
+│   │                                           modified during project
+│   │                                           if improved; /sync-global
+│   │                                           pushes changes back
+│   │
+│   └── agents/                               ← 10 subagents
+│       ├── qa-reviewer.md                      (copied from global)
+│       ├── tc-writer.md                        May be modified during
+│       ├── bug-hunter.md                       project if improved
+│       ├── security-scanner.md
+│       ├── a11y-auditor.md
+│       ├── dom-auditor.md
+│       ├── api-tester.md
+│       ├── playwright-test-planner.md
+│       ├── playwright-test-generator.md
+│       └── playwright-test-healer.md
+│
+├── [Generated during work — not from global]
+│
+├── cache-[feature]-investigation.md          ← Created by /cache-build
+├── cache-[feature]-questions.md              ← Created by /cache-build
+├── cache-[feature]-tc-summary.md             ← Created by /cache-build
+├── cache-[feature]-dom-audit.md              ← Created by /cache-build
+│
+├── checkpoint-[feature]-[date]-[label].md    ← Created by /checkpoint
+│
+├── QA-Review-Report-[feature]-[date].docx    ← Created by /gap-report-doc
+├── TC-[feature]-[date].xlsx                  ← Created by /write-tests
+│
+└── tests/                                    ← Created by /scaffold-automation
+    ├── [feature]/
+    │   ├── pages/
+    │   ├── fixtures/
+    │   ├── specs/
+    │   ├── security/
+    │   ├── data/
+    │   └── helpers/
+    ├── shared/
+    ├── playwright.config.ts
+    └── package.json
+
+
+3. HOW FILES FLOW BETWEEN GLOBAL AND PROJECT
+═════════════════════════════════════════════
+
+┌─────────────────┐                    ┌─────────────────────┐
+│   GLOBAL FOLDER  │                    │   PROJECT FOLDER     │
+│   (Master Copy)  │                    │   (Working Copy)     │
+│                  │                    │                      │
+│  templates/     ─┼── /init-project ──→  CLAUDE.md           │
+│  Playbook        │    (copies &       │  (filled in)         │
+│  Template        │     fills in)      │                      │
+│  templates/     ─┼── /init-project ──→  qa-rules            │
+│  qa-rules        │    (copies)        │  -condensed.md       │
+│  -condensed.md   │                    │                      │
+│  skills/        ─┼── /init-project ──→  .claude/skills/     │
+│                  │    (copies)        │                      │
+│  agents/        ─┼── /init-project ──→  .claude/agents/     │
+│                  │    (copies)        │                      │
+│  registered     ─┼── /init-project ──→  test-tool           │
+│  test-tool xlsx  │    (copies)        │  template .xlsx      │
+│                  │                    │                      │
+│                  │                    │  During project:     │
+│                  │                    │  /learn updates      │
+│                  │                    │  CLAUDE.md &         │
+│                  │                    │  qa-rules-condensed  │
+│                  │                    │  ONLY here           │
+│                  │                    │                      │
+│  templates/     ←┼── /sync-global ───┤  CLAUDE.md           │
+│  Playbook        │    (generalizes    │  (learnings)         │
+│  Template        │     & pushes back) │                      │
+│  templates/     ←┼── /sync-global ───┤  qa-rules            │
+│  qa-rules        │                    │  -condensed.md       │
+│  -condensed.md   │                    │                      │
+└─────────────────┘                    └─────────────────────┘
+
+
+4. THE LIFECYCLE
+════════════════
+
+First time ever (per user/machine):
+  → Copy the Global Folder anywhere on your machine
+  → Open Claude Code IN the global folder and ask it to run
+    skills/init-workspace/SKILL.md (the /init-workspace slash
+    command isn't registered until the wizard installs the skills
+    user-level into ~/.claude/skills/ — after that, every /command
+    works in any folder)
+  → The wizard sets QA_GLOBAL_HOME, captures YOUR tracker/test
+    tool/docs platform in workspace.config.json, optionally sets
+    up a bug-reporter adapter + credentials
+
+New project:
+  → /init-project [name]  (available anywhere after /init-workspace)
+  → Resolves the Global Folder from QA_GLOBAL_HOME (or asks)
+  → Copies everything into project
+  → Fills in CLAUDE.md placeholders
+
+During project work:
+  → All commands read/write PROJECT files only
+  → Manual testing: type bugs into Manual Execution/Bug Summaries.txt,
+    drop evidence into Epic N/ subfolders (Bug {m}.png / .mp4),
+    then /report-bugs creates + attaches everything in batch
+  → /learn updates project's CLAUDE.md + qa-rules-condensed.md
+  → /checkpoint saves session context in project folder
+  → /session-resume loads from project folder
+
+End of project or sprint:
+  → /sync-global
+  → Generalizes learnings (removes project-specific names)
+  → Pushes back to Global Folder
+  → Global Folder now has latest knowledge
+
+Next project:
+  → /init-project [new-name]
+  → Copies from Global Folder (now includes all previous learnings)
+  → New project starts with accumulated knowledge from ALL past projects
+
+
+═══════════════════════════════════════════════════════════════

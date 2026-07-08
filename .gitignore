@@ -1,0 +1,21 @@
+# Credentials — NEVER commit these
+.env
+scripts/.env
+**/.env
+
+# Per-user configuration (each engineer creates their own via /init-workspace)
+workspace.config.json
+
+# Per-user tracker adapters may embed org-specific URLs — commit them only if
+# your whole team shares the tracker. Uncomment to keep adapters local:
+# scripts/adapters/*.js
+# !scripts/adapters/_template.js
+
+# Node / OS noise
+node_modules/
+Thumbs.db
+.DS_Store
+
+# Backups and scratch
+*.bak
+*.tmp

@@ -1,0 +1,235 @@
+═══════════════════════════════════════════════════════════════
+  QA Agents — Quick Reference
+  Complement to the 18 Slash Commands (see QA-Commands-Reference.txt)
+  Last Updated: 2026-07-08 (portable, tool-agnostic edition)
+═══════════════════════════════════════════════════════════════
+
+
+WHAT ARE AGENTS?
+────────────────
+Agents are specialized AI instances that run in their own
+isolated context. Claude spawns them, they do focused work,
+and return results. Your main conversation stays clean.
+
+KEY DIFFERENCES FROM SLASH COMMANDS:
+  - Commands run IN your conversation (shared context)
+  - Agents run in SEPARATE context (isolated)
+  - Commands you invoke manually with /name
+  - Agents can be invoked manually OR auto-triggered by Claude
+  - Agents can have RESTRICTED tools (e.g., read-only)
+
+
+WHERE TO INSTALL
+────────────────
+  Project-level:  your-project/.claude/agents/
+  Global:         ~/.claude/agents/
+
+
+═══════════════════════════════════════════════════════════════
+  RECOMMENDED QA AGENTS (7)
+═══════════════════════════════════════════════════════════════
+
+
+1. QA REVIEWER (qa-reviewer.md)
+   ─────────────────────────────
+   Purpose: Deep-reads documents and extracts testable facts
+   without modifying anything. Safe for investigation.
+
+   Tools: Read, Grep, Glob (NO Edit, NO Bash)
+   Model: opus (needs deep reasoning)
+   Auto-trigger: When Claude needs to investigate a PRD,
+   story, or design file
+
+   Why an agent?
+   - Reading a 50-page PRD produces huge context. Running it
+     as a subagent keeps your main chat clean.
+   - Read-only tools mean it can NEVER accidentally modify
+     your files.
+
+   Works with: /review command (can spawn this agent to
+   analyze each document in parallel)
+
+
+2. TC WRITER (tc-writer.md)
+   ────────────────────────
+   Purpose: Generates test cases in your test tool's import format
+   following all QA skills and conventions.
+
+   Tools: Read, Edit, Grep, Glob
+   Model: opus (needs comprehensive coverage thinking)
+   Auto-trigger: When Claude needs to produce test cases
+   for a specific epic
+
+   Why an agent?
+   - Writing TCs for a large epic generates hundreds of lines.
+     Running as subagent returns only the summary + file path.
+   - Can run MULTIPLE tc-writer agents in parallel — one per
+     epic — for massive speed improvement.
+
+   Works with: /write-tests command (can spawn per-epic agents)
+
+
+3. BUG HUNTER (bug-hunter.md)
+   ──────────────────────────
+   Purpose: Analyzes test execution results and classifies
+   failures. Prepares bug report data.
+
+   Tools: Read, Grep, Glob (NO Edit — analysis only)
+   Model: sonnet (fast classification, doesn't need deep reasoning)
+   Auto-trigger: When test execution produces failures
+
+   Why an agent?
+   - After /execute-tc or /run-automation, there might be
+     20+ failures to analyze. Bug-hunter processes them all
+     in isolation and returns a structured summary.
+   - Read-only ensures it only analyzes, never changes results.
+
+   Works with: /execute-tc, /run-automation, /bug-report
+
+
+4. SECURITY SCANNER (security-scanner.md)
+   ──────────────────────────────────────
+   Purpose: Reviews code, API specs, and configs for security
+   vulnerabilities using OWASP and auth-bypass patterns.
+
+   Tools: Read, Grep, Glob, Bash (for running security scans)
+   Model: opus (security analysis needs deep reasoning)
+   Auto-trigger: When Claude detects security-related review
+
+   Why an agent?
+   - Security scanning produces verbose output (payloads,
+     headers, responses). Isolation keeps main chat focused.
+   - Can run security scan in parallel with functional review.
+
+   Works with: /review (security gaps), /write-tests (security TCs)
+
+
+5. ACCESSIBILITY AUDITOR (a11y-auditor.md)
+   ───────────────────────────────────────
+   Purpose: Runs axe-core scans and evaluates WCAG 2.1 AA
+   compliance. Returns structured violation report.
+
+   Tools: Read, Bash, MCP (for browser interaction)
+   Model: sonnet (scan execution + reporting)
+   Auto-trigger: When testing accessibility
+
+   Why an agent?
+   - axe-core scans produce large JSON output. Agent processes
+     it and returns only actionable violations.
+   - Can scan multiple pages in parallel as separate agents.
+
+   Works with: /execute-tc (a11y TCs), /scaffold-automation (a11y specs)
+
+
+6. DOM AUDITOR (dom-auditor.md)
+   ────────────────────────────
+   Purpose: Inspects live app via Chrome MCP to verify which
+   UI elements actually exist. Catches ghost elements.
+
+   Tools: Read, MCP (Chrome only)
+   Model: sonnet (observation, not deep reasoning)
+   Auto-trigger: When Claude needs to verify UI elements
+   against specs before writing test cases
+
+   Why an agent?
+   - DOM inspection produces hundreds of elements. Agent
+     filters to only what matters and returns a diff against
+     the spec.
+   - Keeps the noisy DOM data out of your main context.
+
+   Works with: /review (ghost element detection), /cross-validate
+
+
+7. API TESTER (api-tester.md)
+   ──────────────────────────
+   Purpose: Executes API requests against endpoints to verify
+   contracts, status codes, and response schemas.
+
+   Tools: Read, Bash (for curl/API calls), Grep
+   Model: sonnet (execution + validation, fast)
+   Auto-trigger: When testing API endpoints
+
+   Why an agent?
+   - API testing produces request/response pairs that are
+     verbose. Agent returns only pass/fail with evidence.
+   - Can test multiple endpoints in parallel.
+
+   Works with: /execute-tc (API TCs), /run-automation (API specs)
+
+
+═══════════════════════════════════════════════════════════════
+  COMMANDS vs AGENTS — WHEN TO USE WHICH
+═══════════════════════════════════════════════════════════════
+
+  Use COMMANDS when:
+  ──────────────────
+  ✓ You want step-by-step interaction (review before proceed)
+  ✓ The output needs your input mid-process
+  ✓ You want to see everything happening in real-time
+  ✓ The task is relatively contained
+
+  Use AGENTS when:
+  ────────────────
+  ✓ The task is self-contained (no mid-process decisions)
+  ✓ The output would be very large / noisy
+  ✓ You want to run multiple things in parallel
+  ✓ You want to restrict what Claude can do (read-only, etc.)
+  ✓ You want to preserve your main conversation context
+
+  Use BOTH together:
+  ──────────────────
+  The /review COMMAND orchestrates, but spawns the
+  qa-reviewer AGENT to deep-read each document in parallel.
+  
+  The /write-tests COMMAND manages the process, but spawns
+  tc-writer AGENTS per epic for parallel generation.
+
+  The /execute-tc COMMAND runs the tests, but spawns
+  bug-hunter AGENT to analyze all failures at the end.
+
+
+═══════════════════════════════════════════════════════════════
+  HOW TO INVOKE AGENTS
+═══════════════════════════════════════════════════════════════
+
+  AUTOMATIC:
+  Claude reads the agent's "description" field and decides
+  when to use it. Example: if you say "investigate this PRD"
+  and qa-reviewer's description mentions "investigating PRD",
+  Claude may auto-spawn it.
+
+  MANUAL:
+  You can ask Claude directly:
+    "Use the qa-reviewer agent to analyze this PRD"
+    "Spawn a tc-writer agent for Epic 3"
+    "Run the security-scanner agent on the login module"
+
+  PARALLEL:
+  You can ask for multiple agents at once:
+    "Use tc-writer agents to write test cases for Epic 1,
+     Epic 2, and Epic 3 in parallel"
+
+
+═══════════════════════════════════════════════════════════════
+  PLAYWRIGHT MCP AGENTS (3)
+═══════════════════════════════════════════════════════════════
+
+  The agents/ folder also ships 3 automation agents that drive
+  a live browser via the Playwright MCP server (they require it
+  to be connected). Used by /scaffold-automation and
+  /run-automation:
+
+  8. PLAYWRIGHT TEST PLANNER (playwright-test-planner.md)
+     Explores the live app and produces a structured test plan
+     (scenarios, selectors, states) for a feature.
+
+  9. PLAYWRIGHT TEST GENERATOR (playwright-test-generator.md)
+     Turns a test plan into executable Playwright specs,
+     verifying each selector against the live DOM as it writes.
+
+  10. PLAYWRIGHT TEST HEALER (playwright-test-healer.md)
+      Re-runs failing specs, classifies the failure (locator
+      drift, timing, env, real bug), and patches test code —
+      never the app.
+
+═══════════════════════════════════════════════════════════════
