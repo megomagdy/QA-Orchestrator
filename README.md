@@ -1,4 +1,4 @@
-# QA-Global — Portable QA Infrastructure for Claude Code
+# QA-Orchestrator — Portable QA Infrastructure for Claude Code
 
 A tool-agnostic, shareable "global QA folder": **34 skills**, **10 agents**, templates, and scripts that give [Claude Code](https://claude.com/claude-code) a complete, opinionated QA methodology — investigation, gap analysis, test case design, automation, execution, and bug reporting.
 
