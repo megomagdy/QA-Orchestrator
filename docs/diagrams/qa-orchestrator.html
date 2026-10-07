@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root{
+    --bg0:#070b16; --bg1:#0b1a2e; --card:#0f1a30; --card2:#101c33;
+    --border:#1d3557; --cyan:#38bdf8; --cyan2:#22d3ee; --txt:#dbe6f3;
+    --muted:#8ea6c2; --dim:#6b83a3;
+  }
+  html,body{ width:1600px; height:1040px; }
+  body{
+    font-family:"Segoe UI",system-ui,-apple-system,sans-serif;
+    background:
+      radial-gradient(1200px 600px at 15% -10%, #12305a55, transparent 60%),
+      radial-gradient(1200px 700px at 100% 110%, #0e3a4a55, transparent 55%),
+      linear-gradient(160deg,#070b16 0%,#0a1a2e 40%,#081426 100%);
+    background-color:#070b16;
+    color:var(--txt); padding:26px 30px; position:relative; overflow:hidden;
+  }
+  /* faint circuit grid */
+  body::before{
+    content:""; position:absolute; inset:0;
+    background-image:
+      linear-gradient(#16305510 1px,transparent 1px),
+      linear-gradient(90deg,#16305510 1px,transparent 1px);
+    background-size:46px 46px; opacity:.5; pointer-events:none;
+  }
+  .wrap{ position:relative; z-index:1; height:100%; display:flex; flex-direction:column; }
+
+  /* ---------- HEADER ---------- */
+  header{ display:flex; align-items:center; gap:20px; padding-bottom:14px; }
+  .brainbox,.checkbox{
+    width:78px; height:78px; border-radius:18px; flex:none;
+    display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(145deg,#0e2540,#0c1c34);
+    border:1px solid #24466f; box-shadow:0 0 24px #22d3ee22, inset 0 0 18px #0891b211;
+  }
+  .htext{ flex:1; text-align:center; }
+  .htext h1{
+    font-size:52px; font-weight:800; letter-spacing:2px; line-height:1;
+    background:linear-gradient(90deg,#e8f4ff,#7dd3fc 55%,#38bdf8);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    text-shadow:0 0 30px #38bdf83a;
+  }
+  .htext .sub{ color:#7fd7f2; font-size:20px; font-weight:600; margin-top:8px; letter-spacing:.3px; }
+  .chips{ margin-top:12px; display:flex; gap:12px; justify-content:center; }
+  .chip{
+    font-size:13.5px; color:#bfe6f7; padding:5px 14px; border-radius:20px;
+    border:1px solid #235777; background:#0e2438;
+    display:flex; align-items:center; gap:7px;
+  }
+  .chip b{ color:#38bdf8; }
+  .count{ font-size:13px; color:var(--dim); margin-top:9px; letter-spacing:.5px; text-align:center; }
+
+  /* ---------- SETUP RIBBON ---------- */
+  .setup{
+    margin:6px 0 14px; padding:9px 16px; border-radius:12px;
+    background:linear-gradient(90deg,#0d213c,#0c1d33);
+    border:1px solid #1d3d63; display:flex; align-items:center; gap:14px; justify-content:center;
+    font-size:15px; color:#bcd4ec;
+  }
+  .setup .tag{ color:#5eead4; font-weight:700; letter-spacing:1px; font-size:13px; }
+  .setup code{ color:#7dd3fc; font-family:"Consolas",monospace; font-size:14.5px; }
+  .setup .arrow{ color:#3d5a80; }
+
+  /* ---------- PHASES ---------- */
+  .phases{ flex:1; display:flex; align-items:stretch; gap:0; }
+  .col{
+    flex:1; background:linear-gradient(180deg,#101f39,#0d1a30);
+    border:1px solid #1d3a5e; border-radius:16px; padding:16px 15px 14px;
+    display:flex; flex-direction:column; position:relative;
+    box-shadow:0 10px 30px #00000040, inset 0 0 30px #0b1f3a30;
+  }
+  .chev{ flex:none; width:34px; display:flex; align-items:center; justify-content:center; color:#2f7fb0; font-size:26px; }
+  .badge{
+    width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:19px; font-weight:800; color:#04121f; margin-bottom:11px;
+    box-shadow:0 0 16px #ffffff10;
+  }
+  .b1{ background:linear-gradient(145deg,#60a5fa,#2563eb);}
+  .b2{ background:linear-gradient(145deg,#2dd4bf,#0d9488);}
+  .b3{ background:linear-gradient(145deg,#c084fc,#7c3aed);}
+  .b4{ background:linear-gradient(145deg,#38bdf8,#0284c7);}
+  .b5{ background:linear-gradient(145deg,#34d399,#059669);}
+  .b6{ background:linear-gradient(145deg,#22d3ee,#0e7490);}
+  .icon{ position:absolute; top:15px; right:14px; opacity:.9; }
+  .col h2{ font-size:17px; font-weight:800; color:#eaf6ff; letter-spacing:.4px; line-height:1.12; min-height:40px; }
+  .cmds{ margin:8px 0 11px; display:flex; flex-wrap:wrap; gap:5px; }
+  .cmds span{
+    font-family:"Consolas",monospace; font-size:11.5px; color:#8fe3ff;
+    background:#0b2036; border:1px solid #1c456b;
+    padding:2px 7px; border-radius:6px;
+  }
+  ul{ list-style:none; margin-top:4px; }
+  li{ font-size:13px; color:#c3d5e8; line-height:1.32; padding:4.5px 0 4.5px 20px; position:relative; border-top:1px solid #14294540; }
+  li:first-child{ border-top:none; }
+  li::before{
+    content:""; position:absolute; left:2px; top:9px; width:9px; height:9px; border-radius:50%;
+    background:radial-gradient(circle at 40% 35%,#7dd3fc,#0ea5e9); box-shadow:0 0 7px #38bdf8aa;
+  }
+
+  /* ---------- KEY PRINCIPLES ---------- */
+  .principles{
+    margin-top:14px; padding:14px 18px 15px; border-radius:16px;
+    background:linear-gradient(180deg,#0c1c33,#0a1729); border:1px solid #1c3a5e;
+  }
+  .principles .ttl{ text-align:center; color:#5eead4; font-weight:800; letter-spacing:2px; font-size:15px; margin-bottom:11px; }
+  .prow{ display:flex; gap:14px; }
+  .p{ flex:1; display:flex; gap:11px; align-items:flex-start; }
+  .p .pi{ width:40px; height:40px; border-radius:11px; flex:none; display:flex; align-items:center; justify-content:center;
+          background:#102844; border:1px solid #244a6f; }
+  .p h3{ font-size:13.5px; font-weight:800; color:#dff1ff; letter-spacing:.3px; }
+  .p p{ font-size:11.5px; color:#93aecb; line-height:1.28; margin-top:2px; }
+
+  /* ---------- FOOTER ---------- */
+  .footer{
+    margin-top:13px; padding:11px; text-align:center; border-radius:12px;
+    background:linear-gradient(90deg,#0a2540,#0b2137,#0a2540);
+    border:1px solid #23507a; color:#bfe6f7; font-size:20px; font-weight:700; letter-spacing:.5px;
+    display:flex; align-items:center; justify-content:center; gap:12px;
+  }
+  .footer b{ color:#38bdf8; }
+  .footer .star{ color:#38bdf8; }
+  .gh{ position:absolute; bottom:18px; right:24px; font-size:12.5px; color:#5d7ba0; font-family:"Consolas",monospace; z-index:2; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brainbox">
+      <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 3a3 3 0 0 0-3 3 3 3 0 0 0-1.5 5.5A3 3 0 0 0 6 17a3 3 0 0 0 3 3V3Z"/>
+        <path d="M15 3a3 3 0 0 1 3 3 3 3 0 0 1 1.5 5.5A3 3 0 0 1 18 17a3 3 0 0 1-3 3V3Z"/>
+        <path d="M9 8h1M14 8h1M9 13h1M14 13h1"/>
+      </svg>
+    </div>
+    <div class="htext">
+      <h1>QA ORCHESTRATOR</h1>
+      <div class="sub">From Requirement to Reported Bug — the Full QA Lifecycle, Automated in Claude Code</div>
+      <div class="chips">
+        <span class="chip"><b>◆</b> AI-Powered Investigation</span>
+        <span class="chip"><b>◆</b> Tool-Agnostic by Design</span>
+        <span class="chip"><b>◆</b> Human-in-the-Loop Quality</span>
+        <span class="chip"><b>◆</b> Zero-Token Reporting</span>
+      </div>
+      <div class="count">37 SKILLS &nbsp;•&nbsp; 10 AI AGENTS &nbsp;•&nbsp; ANY TRACKER · ANY TEST TOOL · ANY STACK</div>
+    </div>
+    <div class="checkbox">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="4" y="3" width="16" height="18" rx="2"/>
+        <path d="M8 8h8M8 12h8M8 16h5"/><path d="M15.5 15.5l1.5 1.5 3-3" stroke="#34d399"/>
+      </svg>
+    </div>
+  </header>
+
+  <div class="setup">
+    <span class="tag">SETUP · ONCE</span>
+    <code>/init-workspace</code><span class="arrow">›</span>
+    <span style="color:#8ea6c2">configures YOUR stack, installs skills machine-wide</span>
+    <span class="arrow">•</span>
+    <code>/init-project</code><span class="arrow">›</span>
+    <span style="color:#8ea6c2">scaffolds each project with a tailored playbook</span>
+  </div>
+
+  <div class="phases">
+
+    <!-- 1 INVESTIGATE -->
+    <div class="col">
+      <div class="badge b1">1</div>
+      <svg class="icon" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg>
+      <h2>INVESTIGATE</h2>
+      <div class="cmds"><span>/save-url</span><span>/review</span><span>/cache-build</span><span>/gap-report</span></div>
+      <ul>
+        <li>Cross-review PRD ↔ Stories ↔ Designs</li>
+        <li>Two-pass gap &amp; conflict detection</li>
+        <li>Cache findings — 60–70% token savings</li>
+        <li>Push open questions to your tracker</li>
+      </ul>
+    </div>
+    <div class="chev">›</div>
+
+    <!-- 2 DESIGN -->
+    <div class="col">
+      <div class="badge b2">2</div>
+      <svg class="icon" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#2dd4bf" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><path d="M14.5 4.5l3 3L8 17l-4 1 1-4 9.5-9.5Z"/></svg>
+      <h2>DESIGN TESTS</h2>
+      <div class="cmds"><span>/write-tests</span><span>/cross-validate</span></div>
+      <ul>
+        <li>SFDP decomposition per story</li>
+        <li>Coverage: negatives ≥30%, security, a11y, i18n</li>
+        <li>Markdown + Excel in your tool's format</li>
+        <li>Audit vs live DOM — kill "ghost elements"</li>
+      </ul>
+    </div>
+    <div class="chev">›</div>
+
+    <!-- 3 AUTOMATE -->
+    <div class="col">
+      <div class="badge b3">3</div>
+      <svg class="icon" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="8" width="14" height="10" rx="2"/><path d="M12 8V5M9 3h6"/><circle cx="9.5" cy="13" r="1.2"/><circle cx="14.5" cy="13" r="1.2"/></svg>
+      <h2>AUTOMATE</h2>
+      <div class="cmds"><span>/scaffold-automation</span><span>/run-automation</span></div>
+      <ul>
+        <li>Playwright framework: POM, fixtures, CI</li>
+        <li>Plan → Generate → Heal agents</li>
+        <li>Selectors verified against real DOM</li>
+        <li>Failure triage + self-healing tests</li>
+      </ul>
+    </div>
+    <div class="chev">›</div>
+
+    <!-- 4 EXECUTE -->
+    <div class="col">
+      <div class="badge b4">4</div>
+      <svg class="icon" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M3 8h18"/><path d="M11 12l3 2-3 2v-4Z" fill="#38bdf8"/></svg>
+      <h2>EXECUTE</h2>
+      <div class="cmds"><span>/execute-tc</span></div>
+      <ul>
+        <li>Drive the browser via Chrome MCP</li>
+        <li>5-step popup-recovery protocol</li>
+        <li>Screenshot evidence on failure</li>
+        <li>Classify: PASS / FAIL / BLOCKED</li>
+      </ul>
+    </div>
+    <div class="chev">›</div>
+
+    <!-- 5 REPORT -->
+    <div class="col">
+      <div class="badge b5">5</div>
+      <svg class="icon" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="8" width="10" height="10" rx="5"/><path d="M12 4v3M5 10H2M22 10h-3M5 16H2M22 16h-3M8 6 6.5 4.5M16 6l1.5-1.5"/></svg>
+      <h2>REPORT BUGS</h2>
+      <div class="cmds"><span>/report-bugs</span><span>/bug-report</span></div>
+      <ul>
+        <li>One-liners → polished tickets</li>
+        <li>Auto-map to the right parent story</li>
+        <li>Pluggable tracker adapter (any tool)</li>
+        <li>Auto-attach evidence — zero tokens</li>
+      </ul>
+    </div>
+    <div class="chev">›</div>
+
+    <!-- 6 LEARN -->
+    <div class="col">
+      <div class="badge b6">6</div>
+      <svg class="icon" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v4h-4"/></svg>
+      <h2>LEARN &amp; SYNC</h2>
+      <div class="cmds"><span>/learn</span><span>/sync-global</span><span>/checkpoint</span></div>
+      <ul>
+        <li>Capture each session's lessons</li>
+        <li>Generalize — strip project specifics</li>
+        <li>Push back into shared templates</li>
+        <li>Project N+1 starts smarter than N</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <div class="principles">
+    <div class="ttl">KEY PRINCIPLES</div>
+    <div class="prow">
+      <div class="p">
+        <div class="pi"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 7.6-7 9-4-1.4-7-4.5-7-9V6l7-3Z"/><path d="M9 12l2 2 4-4" stroke="#34d399"/></svg></div>
+        <div><h3>NO HALLUCINATIONS</h3><p>Confirm UI in the DOM, validate every premise. Missing info is flagged, never invented.</p></div>
+      </div>
+      <div class="p">
+        <div class="pi"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2dd4bf" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7 0l2-2a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-2 2a5 5 0 0 0 7 7l1-1"/></svg></div>
+        <div><h3>TRACEABILITY</h3><p>Every test case maps to a story or a confirmed gap. No orphaned tests, ever.</p></div>
+      </div>
+      <div class="p">
+        <div class="pi"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1" fill="#fbbf24"/></svg></div>
+        <div><h3>RISK-BASED</h3><p>Prioritize P0/P1 and budget ≥30% negatives. Test what actually breaks.</p></div>
+      </div>
+      <div class="p">
+        <div class="pi"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3 5 13h6l-1 8 8-10h-6l1-8Z"/></svg></div>
+        <div><h3>SHIFT-LEFT</h3><p>Find gaps, risks and ambiguities before code — re-investigate after every answer.</p></div>
+      </div>
+      <div class="p">
+        <div class="pi"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 7h4a3 3 0 0 1 0 6h-1"/><path d="M10 17H6a3 3 0 0 1 0-6h1"/><path d="M8 14h8"/></svg></div>
+        <div><h3>TOOL-AGNOSTIC</h3><p>Jira or Azure DevOps, Qmetry or TestRail — swapped via config &amp; adapters.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span class="star">★</span> <span>Better Investigation. &nbsp; Broader Coverage. &nbsp; <b>Fewer Escaped Bugs.</b></span> <span class="star">★</span>
+  </div>
+
+</div>
+<div class="gh">github.com/megomagdy/qa-orchestrator</div>
+</body>
+</html>

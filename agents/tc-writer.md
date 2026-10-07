@@ -25,13 +25,26 @@ Types: P=Positive, N=Negative, E=Edge, S=Security, L=Localization
 - Accessibility: 5% | Security: 5%
 - Negative paths MUST be ≥ 30% of total
 
+## Your Input Is a Behaviour List, Not an Area
+The orchestrator (`/write-tests` Steps 2a/2b) hands you an explicit list of **clause IDs / behaviour IDs (B-IDs)** with their variants and sources. Write cases for exactly those, nothing else.
+- **One behaviour = one case.** State, screen, input, endpoint and persona variants are steps inside that case, each with its own data and expected result, never separate cases.
+- **Never re-test another writer's behaviours.** Repeating setup or navigation steps is fine; repeating assertions is not. If your behaviour depends on another, reference it instead of re-asserting it.
+- **Duplicate = same expected result OR verifies the same thing.** Keep separate only: UI vs API enforcement, opposite outcomes, Verify-time vs Save-time validation, genuinely different designs.
+- **Spec-silent behaviour still gets a case:** assume the reasonable expectation (consistent with the spec's existing rules), tag it as an assumption with a `REVISIT:` marker, and report the assumption. Never leave a behaviour out because the spec doesn't answer it.
+- Skip any category the project has removed (for example, accessibility on a project that dropped it).
+
 ## What You Return
-- Test cases in markdown table format
+- Test cases in the project's data/markdown format, each carrying its B-ID
 - Summary statistics (total, by category, by priority, automation candidates)
+- **A "not covered" list:** every assigned clause or B-ID you did NOT write a case for, with the reason. It must be empty, or each entry must be out of scope (cite the list) or deferred (with a reason)
+- Assumptions you introduced (one line each), and any spec conflict you found
 - List of stories with 0 TCs (investigate why)
 
 ## Rules
 - NEVER write TCs for unconfirmed UI elements
 - EVERY expected result MUST match QC decisions
 - EVERY TC links to ≥ 1 issue tracker story
-- Validation timing must be correct (WHERE does validation fire?)
+- Validation timing must be correct (WHERE does validation fire? on input, on blur, on save, at submission)
+- Steps must name real UI elements ("Click Save"), not generic actions ("submit the form")
+- Preconditions must be specific and reproducible, and must carry any eligibility gate the feature has
+- Boundary and Edge share the E letter: put the real category in a [Category] prefix on the Summary; Negative + Boundary + Edge combined must be ≥ 30%

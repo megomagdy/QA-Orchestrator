@@ -54,6 +54,13 @@ PHASE 2: TEST CASE DESIGN
   partitioning, boundary value analysis, and decision tables. Follows
   your TC ID convention (E{epic#}-{type}-{seq}). Will NOT start if
   investigation gaps are unresolved.
+  Before writing any case it builds two inventories: a requirement
+  clause inventory (traceability-matrix.md: clause → behaviour → case)
+  so nothing is missed, and a behaviour inventory (one behaviour = one
+  case, variants as steps) so nothing is duplicated. Writer agents get
+  explicit behaviour lists and must return a "not covered" list.
+  Spec-silent behaviours get a case on a stated assumption (REVISIT).
+  A coverage gate and a duplicate gate must pass before output.
   Output: Two files — Markdown (for review) + Excel (importable into
   your test management tool, matching its template).
 
@@ -64,7 +71,9 @@ PHASE 2: TEST CASE DESIGN
   and design files. Catches contradictions in expected results, validation
   timing errors (the #1 mistake pattern), linked-state blocking
   violations, ghost UI elements, missing boundary values, missing auth
-  coverage, and missing accessibility coverage.
+  coverage, missing accessibility coverage, duplicate cases (same
+  expected result or same rule), and clause-level coverage gaps against
+  the traceability matrix (unmapped clause, dangling ID, orphan case).
   Output: Contradiction report with verdict (CLEAN / NEEDS CORRECTION /
   MAJOR ISSUES).
 

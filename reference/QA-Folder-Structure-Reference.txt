@@ -1,17 +1,18 @@
 ═══════════════════════════════════════════════════════════════
   QA Infrastructure — Folder Structure Reference
-  Last Updated: 2026-07-08 (portable, tool-agnostic edition)
+  Last Updated: 2026-08-25 (portable, tool-agnostic edition)
 ═══════════════════════════════════════════════════════════════
 
 
-1. GLOBAL FOLDER (Master Copy — One on your machine)
+1. GLOBAL FOLDER (Single Source of Truth — One on your machine)
 ════════════════════════════════════════════════════
 
 Location: Wherever you choose — the path is stored in the QA_GLOBAL_HOME
           environment variable, set once by /init-workspace
           (e.g., C:\Users\you\QA-Global or ~/qa-global)
 Purpose: Source of truth. /init-workspace configures it once per user.
-         /init-project copies FROM here.
+         /init-project LINKS skills+agents from here and COPIES
+         the files each project authors (see LINK-VS-COPY.md).
          /sync-global pushes BACK to here.
 
 QA-Global/
@@ -49,9 +50,11 @@ QA-Global/
 │   ├── .env.example                          ← Credential template (copy
 │   │                                            to .env — never share .env)
 │   └── adapters/
-│       └── _template.js                      ← Adapter contract + skeleton:
+│       ├── _template.js                      ← Adapter contract + skeleton:
 │                                                copy to <tracker>.js and
 │                                                implement createIssue()
+│       └── jira.js                            ← Jira Cloud adapter (REST v3,
+│                                                markdown->ADF, attachments)
 │
 ├── reference/                                ← Human-readable documentation
 │   ├── QA-Commands-Reference.txt               (this file and its siblings)
@@ -70,7 +73,7 @@ QA-Global/
 │   ├── playwright-test-generator.md
 │   └── playwright-test-healer.md
 │
-└── skills/                                   ← 34 skills, two kinds, all as
+└── skills/                                   ← 37 skills, two kinds, all as
     │                                           <name>/SKILL.md folders
     │
     │  WORKFLOW COMMANDS (18) — the /commands; each SKILL.md has
@@ -82,7 +85,7 @@ QA-Global/
     ├── bug-report/         ├── report-bugs/       ├── learn/
     ├── checkpoint/         ├── session-resume/    └── sync-global/
     │
-    │  TECHNIQUE REFERENCES (16) — methodology & framework knowledge:
+    │  TECHNIQUE REFERENCES (19) — methodology & framework knowledge:
     ├── unified-qa/         ├── test-plan-generation/
     ├── playwright-e2e-testing/  ├── playwright-enhanced/
     ├── playwright-api-testing/  ├── form-validation-breaker/
@@ -91,18 +94,30 @@ QA-Global/
     ├── api-testing-rest/   ├── postman-api-testing/
     ├── appium-mobile-testing/   ├── ci-cd-pipeline-config/
     ├── advanced-allure-reporting/
-    └── maestro-mobile-testing/
+    ├── maestro-mobile-testing/
+    ├── qa-dom-audit/       ├── enforcement-tc-gen/
+    └── module-areas-manager/
 
     NOTE: there is NO separate commands/ folder — slash commands ARE
-    skill folders. /init-workspace installs them user-level
-    (~/.claude/skills/) so they work in any project folder.
+    skill folders. /init-workspace LINKS them user-level
+    (~/.claude/skills/ -> this folder, via junction/symlink) so they work
+    in any project folder AND can never go stale.
+
+    LINK vs COPY (see LINK-VS-COPY.md at the root of this folder):
+      LINK  what a project only CONSUMES  -> skills/, agents/, scripts/
+      COPY  what a project AUTHORS        -> CLAUDE.md, qa-rules-condensed.md,
+                                             test-tool template, Manual
+                                             Execution/, .env
+    Copies of shared files silently run stale versions: project folders once
+    held April copies while this folder had August versions, so an improved
+    /review never ran and nobody noticed.
 
 
 2. PROJECT FOLDER (Created by /init-project for each project)
 ═════════════════════════════════════════════════════════════
 
 Location: e.g., C:\Users\you\Projects\MyModule
-Purpose: Working copy. All commands read/write HERE.
+Purpose: Where the work happens. All commands read/write HERE.
          /sync-global pushes learnings back to global.
 
 MyModule/
@@ -197,20 +212,23 @@ MyModule/
 
 ┌─────────────────┐                    ┌─────────────────────┐
 │   GLOBAL FOLDER  │                    │   PROJECT FOLDER     │
-│   (Master Copy)  │                    │   (Working Copy)     │
-│                  │                    │                      │
+│  (SINGLE SOURCE  │                    │                      │
+│    OF TRUTH)     │                    │                      │
 │  templates/     ─┼── /init-project ──→  CLAUDE.md           │
-│  Playbook        │    (copies &       │  (filled in)         │
-│  Template        │     fills in)      │                      │
+│  Playbook        │    COPY &          │  (filled in —        │
+│  Template        │    fill in         │   project authors)   │
 │  templates/     ─┼── /init-project ──→  qa-rules            │
-│  qa-rules        │    (copies)        │  -condensed.md       │
-│  -condensed.md   │                    │                      │
-│  skills/        ─┼── /init-project ──→  .claude/skills/     │
-│                  │    (copies)        │                      │
-│  agents/        ─┼── /init-project ──→  .claude/agents/     │
-│                  │    (copies)        │                      │
+│  qa-rules        │    COPY            │  -condensed.md       │
+│  -condensed.md   │  (/learn writes    │  (diverges per       │
+│                  │   to the project   │   project; /sync-    │
+│                  │   copy)            │   global promotes)   │
+│  skills/        ═┼══ /init-project ══▶  .claude/skills/     │
+│                  │    LINK (junction  │  (same files —       │
+│                  │    / symlink)      │   cannot drift)      │
+│  agents/        ═┼══ /init-project ══▶  .claude/agents/     │
+│                  │    LINK            │                      │
 │  registered     ─┼── /init-project ──→  test-tool           │
-│  test-tool xlsx  │    (copies)        │  template .xlsx      │
+│  test-tool xlsx  │    COPY            │  template .xlsx      │
 │                  │                    │                      │
 │                  │                    │  During project:     │
 │                  │                    │  /learn updates      │
