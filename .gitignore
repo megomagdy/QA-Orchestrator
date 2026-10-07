@@ -19,3 +19,9 @@ Thumbs.db
 # Backups and scratch
 *.bak
 *.tmp
+
+# Built skill upload zips (node scripts/build-upload-zips.js)
+.upload-zips/
+
+# Local backups of replaced / retired files
+.backups/

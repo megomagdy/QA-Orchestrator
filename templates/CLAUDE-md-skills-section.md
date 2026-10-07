@@ -22,6 +22,13 @@
 | 14 | ci-cd-pipeline-config | `.claude/skills/ci-cd-pipeline-config/SKILL.md` | GitHub Actions, Azure DevOps, Jenkins CI integration |
 | 15 | advanced-allure-reporting | `.claude/skills/advanced-allure-reporting/SKILL.md` | Allure reports, trends, flaky detection, CI dashboards |
 | 16 | maestro-mobile-testing | `.claude/skills/maestro-mobile-testing/SKILL.md` | YAML-based mobile UI testing flows |
+| 17 | qa-dom-audit | `.claude/skills/qa-dom-audit/SKILL.md` | Live DOM verification of buttons/menus/actions — catches ghost UI elements |
+| 18 | enforcement-tc-gen | `.claude/skills/enforcement-tc-gen/SKILL.md` | Role x module x action micro TCs for RBAC/permission enforcement |
+| 19 | module-areas-manager | `.claude/skills/module-areas-manager/SKILL.md` | Maintains the module-areas config: modules to UI areas, actions, selectors |
+| 20 | cache-build | `.claude/skills/cache-build/SKILL.md` | Caches investigation output so later commands skip re-analysis |
+| 21 | sync-global | `.claude/skills/sync-global/SKILL.md` | Promotes generalized project learnings back to the global folder |
+| 22 | init-project | `.claude/skills/init-project/SKILL.md` | Scaffolds a project: links skills/agents, copies the authored files |
+| 23 | init-workspace | `.claude/skills/init-workspace/SKILL.md` | One-time machine setup: links skills/agents, writes workspace.config.json |
 
 ## Workflow → Skills Mapping
 

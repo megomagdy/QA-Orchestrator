@@ -63,8 +63,12 @@ WHERE TO INSTALL
    Why an agent?
    - Writing TCs for a large epic generates hundreds of lines.
      Running as subagent returns only the summary + file path.
-   - Can run MULTIPLE tc-writer agents in parallel — one per
-     epic — for massive speed improvement.
+   - Can run MULTIPLE tc-writer agents in parallel for massive
+     speed improvement. Each receives a DISJOINT list of behaviours
+     (B-IDs) from the clause/behaviour inventories — never just
+     "an area" — so no two writers test the same rule.
+   - Returns its cases plus a "not covered" list (must be empty or
+     justified) and any assumptions it introduced.
 
    Works with: /write-tests command (can spawn per-epic agents)
 
@@ -181,8 +185,10 @@ WHERE TO INSTALL
   The /review COMMAND orchestrates, but spawns the
   qa-reviewer AGENT to deep-read each document in parallel.
   
-  The /write-tests COMMAND manages the process, but spawns
-  tc-writer AGENTS per epic for parallel generation.
+  The /write-tests COMMAND manages the process: it builds the
+  clause and behaviour inventories first, then spawns tc-writer
+  AGENTS with disjoint behaviour lists for parallel generation, and
+  re-runs the coverage + duplicate gates on the merged result.
 
   The /execute-tc COMMAND runs the tests, but spawns
   bug-hunter AGENT to analyze all failures at the end.

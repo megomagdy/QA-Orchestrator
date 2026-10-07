@@ -1,6 +1,6 @@
-# QA-Global — Portable QA Infrastructure for Claude Code
+# QA-Orchestrator — Portable QA Infrastructure for Claude Code
 
-A tool-agnostic, shareable "global QA folder": **34 skills**, **10 agents**, templates, and scripts that give [Claude Code](https://claude.com/claude-code) a complete, opinionated QA methodology — investigation, gap analysis, test case design, automation, execution, and bug reporting.
+A tool-agnostic, shareable "global QA folder": **37 skills**, **10 agents**, templates, and scripts that give [Claude Code](https://claude.com/claude-code) a complete, opinionated QA methodology — investigation, gap analysis, test case design, automation, execution, and bug reporting.
 
 **Nothing here is tied to a specific company or vendor.** Your issue tracker (Jira, Azure DevOps, Linear, GitHub Issues, …), test management tool (Qmetry, TestRail, Zephyr, Xray, …), docs platform (Notion, Confluence, SharePoint, …), and design tool are all configured **once per user** via `/init-workspace`.
 
@@ -27,7 +27,7 @@ A tool-agnostic, shareable "global QA folder": **34 skills**, **10 agents**, tem
    > Read `skills/init-workspace/SKILL.md` and follow it.
 
    (On a fresh copy the `/init-workspace` slash command isn't registered yet — skills only auto-load from `.claude/skills/` or `~/.claude/skills/`, so you bootstrap by pointing Claude at the file once.) The wizard will:
-   - **Install all skills and agents user-level** (`~/.claude/skills/`, `~/.claude/agents/`) — after this, every `/command` works in any folder on your machine
+   - **LINK all skills and agents user-level** (`~/.claude/skills/`, `~/.claude/agents/` → this folder, via junction/symlink) — after this, every `/command` works in any folder on your machine, and editing this folder updates them everywhere with nothing to re-run. See **[LINK-VS-COPY.md](LINK-VS-COPY.md)** for why links (not copies) are used for shared files.
    - Set the `QA_GLOBAL_HOME` environment variable to this folder's path
    - Ask which tools your team uses and write `workspace.config.json`
    - Optionally set up a bug-reporter tracker adapter + credentials (`scripts/.env`)
@@ -96,11 +96,11 @@ flowchart TD
 
 ### Phase-by-phase, with the agents
 
-**🏁 Setup.** `/init-workspace` runs once per user: installs the skills/agents user-level so every command works in any folder, sets `QA_GLOBAL_HOME`, and records your company's tools in `workspace.config.json`. `/init-project` runs once per project: it copies skills + agents into the project, creates `CLAUDE.md` from the playbook template (13 setup questions fill the placeholders), seeds the `Manual Execution/` folder, and registers your test tool's import template.
+**🏁 Setup.** `/init-workspace` runs once per user: **links** skills/agents user-level so every command works in any folder, sets `QA_GLOBAL_HOME`, and records your company's tools in `workspace.config.json`. `/init-project` runs once per project: it **links** skills + agents to this folder (never copies — see [LINK-VS-COPY.md](LINK-VS-COPY.md)), then **copies** the files the project authors — `CLAUDE.md` from the playbook template (13 setup questions fill the placeholders), `qa-rules-condensed.md`, the `Manual Execution/` folder, and your test tool's import template.
 
 **🔍 Phase 1 — Investigate.** `/save-url` registers every reference URL so no session ever re-asks for them. `/review` cross-references PRD ↔ user stories ↔ design files with two-pass self-verification (so it raises only *real* gaps, not questions the docs already answer) — for large scopes it spawns **qa-reviewer** agents to deep-read each document in parallel, and consults the security/accessibility/validation technique skills to catch missing requirements. `/cache-build` freezes the findings into cache files that later commands read instead of re-analyzing everything. `/gap-report-doc` turns findings into a Word report you review; `/gap-report-push` pushes the approved questions to your team's questions tracker. When product answers arrive, the skill mandates a **re-investigation pass** — an answer to question A often invalidates assumption B.
 
-**✍️ Phase 2 — Design tests.** `/write-tests` applies the SFDP decomposition framework (States, Fields, Data, Permissions) and the coverage matrix (happy/negative/boundary/edge/security/accessibility/localization, negatives ≥ 30%). For 5+ stories it spawns **tc-writer** agents per epic in parallel, plus **security-scanner** and **a11y-auditor** for specialized cases. Output: readable Markdown + an Excel file matching *your* test tool's import template exactly. `/cross-validate` then audits every expected result against QC decisions and the live DOM — spawning **dom-auditor** to catch "ghost elements" (UI that exists in specs but not in the app).
+**✍️ Phase 2 — Design tests.** `/write-tests` applies the SFDP decomposition framework (States, Fields, Data, Permissions) and the coverage matrix (happy/negative/boundary/edge/security/accessibility/localization, negatives ≥ 30%). Before any case is written it builds a **requirement clause inventory** (traceability matrix: clause → behaviour → case) and a **behaviour inventory** (one behaviour = one case, variants as steps), so nothing is missed and nothing is duplicated. For 5+ stories it then spawns **tc-writer** agents in parallel with disjoint behaviour lists, each returning a "not covered" list, plus **security-scanner** and **a11y-auditor** for specialized cases. Spec-silent behaviours get a case on a stated assumption, and a **coverage gate** and a **duplicate gate** must pass before output. Output: readable Markdown + an Excel file matching *your* test tool's import template exactly. `/cross-validate` then audits every expected result against QC decisions and the live DOM — spawning **dom-auditor** to catch "ghost elements" (UI that exists in specs but not in the app).
 
 **🤖 Phase 3 — Automate.** `/scaffold-automation` builds a production-grade Playwright framework (Page Object Model, auth-state reuse, multi-environment config, CI pipeline) — **playwright-test-planner** explores the live app to design scenarios and **playwright-test-generator** writes specs while verifying every selector against the real DOM. `/run-automation` executes the suite, then spawns **bug-hunter** to classify failures (real bug vs. locator drift vs. timing vs. environment) and **playwright-test-healer** to fix broken tests — never the app.
 
@@ -120,7 +120,7 @@ QA-Global/
 ├── 📄 README.md                    ← you are here
 ├── ⚙️ workspace.config.json        ← YOUR tools (created by /init-workspace — not shipped)
 │
-├── 📁 skills/                      ← 34 skills (each = <name>/SKILL.md)
+├── 📁 skills/                      ← 37 skills (each = <name>/SKILL.md)
 │   │
 │   │   WORKFLOW COMMANDS (18) — the /commands of the journey:
 │   ├── init-workspace/  init-project/  save-url/
@@ -130,7 +130,7 @@ QA-Global/
 │   ├── execute-tc/  bug-report/  report-bugs/
 │   ├── learn/  sync-global/  checkpoint/  session-resume/
 │   │
-│   │   TECHNIQUE REFERENCES (16) — methodology & framework knowledge:
+│   │   TECHNIQUE REFERENCES (19) — methodology & framework knowledge:
 │   ├── unified-qa/  test-plan-generation/
 │   ├── playwright-e2e-testing/  playwright-enhanced/  playwright-api-testing/
 │   ├── form-validation-breaker/  auth-bypass-tester/  owasp-security-testing/
@@ -166,26 +166,28 @@ QA-Global/
     └── QA-Folder-Structure-Reference.txt ← global ↔ project file flow
 ```
 
-And how files flow between the **global folder** (master) and each **project folder** (working copy):
+And how files flow between the **global folder** (the single source of truth) and each **project folder**.
+
+**The rule ([LINK-VS-COPY.md](LINK-VS-COPY.md)):** *link what the project only **consumes**, copy what the project **authors**.* Skills and agents are **linked** so they can never go stale; the playbook, rules file, and bug-workflow files are **copied** because each project writes to its own.
 
 ```mermaid
 flowchart LR
-    subgraph G["🌍 GLOBAL FOLDER (master copy)"]
+    subgraph G["🌍 GLOBAL FOLDER (single source of truth)"]
         GT["templates/<br/>playbook + rules"]
         GS["skills/ + agents/"]
         GX["registered test-tool<br/>import template"]
     end
 
-    subgraph P["📂 PROJECT FOLDER (working copy)"]
+    subgraph P["📂 PROJECT FOLDER"]
         PC["CLAUDE.md<br/><i>filled-in playbook</i>"]
         PS[".claude/skills/<br/>.claude/agents/"]
         PM["Manual Execution/<br/><i>bug workflow</i>"]
         PT["tests/<br/><i>Playwright suite</i>"]
     end
 
-    GT -->|"/init-project<br/>copies + fills in"| PC
-    GS -->|"/init-project copies"| PS
-    GX -->|"/init-project copies"| PM
+    GT -->|"/init-project COPIES + fills in<br/>(project authors it)"| PC
+    GS ==>|"/init-project LINKS<br/>(never copies — cannot drift)"| PS
+    GX -->|"/init-project COPIES<br/>(project authors its own)"| PM
     PC -->|"/sync-global<br/>generalizes learnings<br/>back into templates"| GT
 ```
 
@@ -216,7 +218,7 @@ flowchart LR
 | `/checkpoint` | Anytime | Saves full session context to a file before you step away |
 | `/session-resume` | Anytime | Restores a checkpoint and continues where you left off |
 
-### Technique references (16)
+### Technique references (19)
 
 | Skill | Knowledge it carries |
 |---|---|
@@ -236,6 +238,9 @@ flowchart LR
 | `maestro-mobile-testing` | YAML-flow mobile UI testing |
 | `ci-cd-pipeline-config` | GitHub Actions, Jenkins, GitLab CI test integration |
 | `advanced-allure-reporting` | Allure reports, trends, flaky-test detection, CI dashboards |
+| `qa-dom-audit` | Live DOM verification of buttons/menus/actions against a spec — catches ghost UI elements |
+| `enforcement-tc-gen` | Role x module x action micro TCs for RBAC/permission enforcement (.docx + .md) |
+| `module-areas-manager` | Maintains the module-areas config mapping modules to UI areas, actions, and selectors |
 
 ---
 

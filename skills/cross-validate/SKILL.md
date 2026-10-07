@@ -17,8 +17,10 @@ Read `qa-rules-condensed.md` from the project root for condensed QA rules.
 6. **Missing Boundary** — Numeric/text field without boundary TCs
 7. **Missing Auth TC** — Action without authorization TCs
 8. **Missing A11y TC** — Interactive screen without accessibility TCs
-9. **Coverage Gaps** — Stories with 0 TCs
+9. **Coverage Gaps** — checked at **clause level**, not just story level: every clause in `traceability-matrix.md` (requirement bullets, table rows, state-matrix cells, copy strings, design-only elements, implied areas) maps to an existing case, or is marked out of scope / deferred with a reason. Flag unmapped clauses, dangling case IDs (in the matrix but not in the suite) and orphan cases (in the suite but tied to no clause). Also flag stories with 0 TCs. If the project has no matrix yet, build it before judging coverage.
 10. **Delta File Integrity** — Delta/correction file headers match main file
+11. **Duplicates** — two or more cases with the **same expected result** or that **verify the same thing**: state/screen/endpoint/persona variants of one rule as separate cases, or one case whose assertions are all inside another. Recommend merging into one case (variants as steps). Not duplicates: UI vs API enforcement, opposite outcomes, Verify vs Save timing, genuinely different designs.
+12. **Spec-silent gaps** — any behaviour listed as "not covered" or "no case written" because the spec doesn't answer it. It needs a case on a stated, tagged assumption (`REVISIT:`), not a gap entry.
 
 ## Agent Orchestration
 - **dom-auditor agent** → Verify UI elements in TCs actually exist in live app
@@ -29,7 +31,10 @@ Read `qa-rules-condensed.md` from the project root for condensed QA rules.
 | TC ID | Issue Type | TC Says | Source Says | Source Ref | Severity |
 
 ### Coverage Gaps
-| Story | Issue | Action Needed |
+| Clause / Story | Issue (unmapped / dangling / orphan / 0 TCs / spec-silent) | Action Needed |
+
+### Duplicates
+| Case IDs | Same expected result / same rule | Merge into (survivor) |
 
 ### Verdict
 - ✅ CLEAN — TCs ready
