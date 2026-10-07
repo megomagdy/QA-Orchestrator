@@ -27,7 +27,7 @@ Decompose every screen by States, Fields, Data interactions, Permission gates be
 
 ## TC ID convention
 
-E{epic#}-{type}-{sequence} — types: P Positive, N Negative, E Edge, S Security, L Localization. Note that Boundary and Edge share the E letter; put the real category in a [Category] prefix on the Summary so it stays filterable.
+E{epic#}-{type}-{sequence} — types: P Positive (incl. Happy), N Negative, E Edge (incl. Boundary), I Integration, S Security, L Localization, A Accessibility. Note that Boundary and Edge share the E letter; put the real category in a [Category] prefix on the Summary so it stays filterable.
 
 ## Coverage matrix
 
@@ -47,6 +47,9 @@ Negative + Boundary + Edge combined must be at least 30% — negative alone typi
 - EVERY expected result must match the recorded product decisions exactly.
 - EVERY test case links to at least one tracker story and to the clause(s) it proves — no orphans.
 - Steps must name real UI elements ("Click Save"), not generic actions ("submit the form").
+- The final expected result names the distinguishing outcome (what was blocked / allowed / stored / shown, with the value) — two opposite-outcome cases never end in the same sentence.
+- When the feature replaces existing behaviour and code is available, every branch of the current code is a clause you cover or mark superseded.
+- Cross-story case: every story key in Story Linkages plus an `also-<KEY>` label.
 - Preconditions must be specific and reproducible, and must carry any eligibility gate the feature has.
 - Get validation timing right — state WHERE validation fires (on input, on blur, on save, at submission).
 - Where an answer is still pending, write the case on a stated assumption and tag it (assumption-A1, REVISIT:) so one filter finds every case needing revision later.

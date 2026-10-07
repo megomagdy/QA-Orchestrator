@@ -193,8 +193,14 @@ Types:
   P = Positive / Happy Path
   N = Negative / Error Path
   E = Edge Case / Boundary
+  I = Integration
   S = Security / Permission
   L = Localization / RTL
+  A = Accessibility
+
+Boundary and Edge share E: the true category lives in the [Category] Summary prefix.
+Cross-story case: every story key in Story Linkages + an also-<KEY> label.
+The final expected result names the distinguishing outcome — never a generic ending.
 ```
 
 ### 3.2 Priority Assignment

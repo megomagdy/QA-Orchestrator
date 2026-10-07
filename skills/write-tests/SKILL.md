@@ -36,9 +36,10 @@ Missed cases happen when writers are given **areas** ("the admin panel") instead
 - every PRD / story bullet, every table row (status tables, error-code tables, permission-matrix rows, "when X happens" lists), every state-matrix cell (state × screen × persona), every UI copy string;
 - every design-only element seen in the rendered frames (Figma states, helper texts, tooltips, empty states);
 - implied cross-cutting areas: permissions for every role on every new control, API-level enforcement of every write, concurrency / two tabs, session expiry, empty or missing data, long values, date / time / timezone formats, regression of existing behaviour the feature touches, downstream consumers of changed data;
-- every product decision (QC-ID) and every assumption.
+- every product decision (QC-ID) and every assumption;
+- **when the feature replaces or changes existing behaviour and the code is available: every branch of the current implementation** (each `if` / guard / refusal / fallback in the code being replaced). Branches no document states are still behaviour users rely on today, and each becomes a clause (covered, or explicitly superseded).
 
-Columns: `C-ID | Clause | Source (§ / QC / Figma frame / implied) | B-ID(s) | Case ID(s) | Status`. Status is **covered**, **out of scope (cite the Out-of-Scope list)** or **deferred (reason)**. "Not covered" is not an allowed status. A spec-silent clause is covered on a stated reasonable assumption (tag + `REVISIT:`).
+Columns: `C-ID | Clause | Source (§ / QC / Figma frame / code branch / implied) | B-ID(s) | Case ID(s) | Status`. Status is **covered**, **out of scope (cite the Out-of-Scope list)**, **deferred (reason)** or **superseded (by <decision>)** for a clause a later decision replaced (name the decision; the replacing decision's own clause carries the case). "Not covered" is not an allowed status. A spec-silent clause is covered on a stated reasonable assumption (tag + `REVISIT:`).
 
 Each clause maps to a behaviour (Step 2b), and each behaviour to exactly one case. So the chain **clause → behaviour → case** is complete before writing starts, and it's what the agents receive.
 
@@ -65,7 +66,11 @@ Each clause maps to a behaviour (Step 2b), and each behaviour to exactly one cas
 - **Negative paths MUST be ≥ 30% of total**
 
 ### Step 4: TC Format
-TC ID: `E{epic#}-{type}-{seq}` — Types: P=Positive, N=Negative, E=Edge, S=Security, L=Localization
+TC ID: `E{epic#}-{type}-{seq}` — Types: P=Positive (incl. Happy), N=Negative, E=Edge (incl. Boundary), I=Integration, S=Security, L=Localization, A=Accessibility. Boundary and Edge share `E`, so the true category lives in a `[Category]` prefix on the Summary; count coverage on the prefix, not the letter.
+
+**Story linkage for cross-story cases:** when a case proves clauses from more than one story (e.g. after a cross-story merge), put **every** story key in Story Linkages and add an `also-<KEY>` label for each non-primary story, so filtering by either story finds it.
+
+**Final expected result names its own outcome.** The last expected result must state the observable outcome that distinguishes this case (what was blocked / allowed / stored / shown, with the value), not a generic ending ("the date is accepted", "it works"). Two cases with opposite outcomes must never end in the same sentence.
 
 ### Step 5: Self-Validation
 See [validation-checklist.md](validation-checklist.md) for the full self-validation checklist.
@@ -76,7 +81,7 @@ See [validation-checklist.md](validation-checklist.md) for the full self-validat
 
 ## Coverage Gate (generator / final check)
 Before writing the outputs, fail the build if:
-- any clause in `traceability-matrix.md` has no case ID and isn't marked out of scope or deferred with a reason;
+- any clause in `traceability-matrix.md` has no case ID and isn't marked out of scope, deferred (with a reason) or superseded (naming the decision);
 - any case ID in the matrix doesn't exist (dangling), or any case isn't referenced by at least one clause (orphan, so it has no requirement);
 - any B-ID in the behaviour inventory has no case.
 
@@ -87,7 +92,10 @@ Before writing the outputs, fail the build if:
 - two cases share a `B-ID`;
 - two cases have an identical final expected result (excluding pure navigation/setup steps);
 - a pair of cases has a high summary+scope similarity (e.g. token Jaccard ≥ 0.45) and is not on an explicit "kept separate, reason: …" allow-list.
-Merging after the fact is the fallback, not the process: it costs a full re-read of the suite and leaves long cases.
+
+**The lexical checks are a tripwire, not the review.** A **reading pass is mandatory**: group the cases by behaviour (B-ID or owning rule) and read every case in each group against the duplicate definition. On a real suite the similarity gate flagged 65 pairs while a reading pass found 210 duplicates, because duplicates reworded per state or screen rarely look alike. Passing the gate without the reading pass does not count as "no duplicates".
+
+**Merging after the fact is the fallback, not the process:** it costs a full re-read of the suite and leaves long cases. If you must merge, do the **trims in the same pass**: when two cases overlap only partly, remove the repeated assertions from the non-owning case while you merge, not as a later step (a separate trim pass caused 88 extra edits and two more merges after the fact).
 
 ## Output — Two Files
 ### File 1: Markdown — Readable tables grouped by epic/story.
@@ -98,3 +106,4 @@ Merging after the fact is the fallback, not the process: it costs a full re-read
 - EVERY expected result MUST match QC decisions
 - EVERY TC links to ≥ 1 issue tracker story
 - Validation timing must be correct (WHERE does validation fire?)
+- The final expected result of every TC names the distinguishing outcome (Step 4)

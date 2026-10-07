@@ -17,7 +17,7 @@ Read and follow these skill files before writing:
 
 ## TC ID Convention
 Format: E{epic#}-{type}-{sequence}
-Types: P=Positive, N=Negative, E=Edge, S=Security, L=Localization
+Types: P=Positive (incl. Happy), N=Negative, E=Edge (incl. Boundary), I=Integration, S=Security, L=Localization, A=Accessibility
 
 ## Coverage Requirements
 - Happy path: 15% | Positive: 10% | Negative: 20% | Boundary: 10%
@@ -46,5 +46,8 @@ The orchestrator (`/write-tests` Steps 2a/2b) hands you an explicit list of **cl
 - EVERY TC links to ≥ 1 issue tracker story
 - Validation timing must be correct (WHERE does validation fire? on input, on blur, on save, at submission)
 - Steps must name real UI elements ("Click Save"), not generic actions ("submit the form")
+- The final expected result names the distinguishing outcome (what was blocked / allowed / stored / shown, with the value) — two opposite-outcome cases never end in the same sentence
+- When the feature replaces existing behaviour and code is available, every branch of the current code is a clause you cover or mark superseded
+- Cross-story case: every story key in Story Linkages + an `also-<KEY>` label
 - Preconditions must be specific and reproducible, and must carry any eligibility gate the feature has
 - Boundary and Edge share the E letter: put the real category in a [Category] prefix on the Summary; Negative + Boundary + Edge combined must be ≥ 30%

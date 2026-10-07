@@ -39,7 +39,7 @@ Work Key | Summary | Description | Precondition | Status | Priority | Assignee |
 | Created On | EMPTY always | Tool auto-fills |
 | Updated By | EMPTY always | Tool auto-fills |
 | Updated On | EMPTY always | Tool auto-fills |
-| Story Linkages | TC first row | Issue key(s) e.g. `PROJ-5117` |
+| Story Linkages | TC first row | Issue key(s) e.g. `PROJ-5117`; a cross-story case lists every key (e.g. `PROJ-5117, PROJ-5120`) and adds an `also-<KEY>` label per non-primary story |
 | Is Shareable Step | EVERY row | `FALSE` |
 
 ## Multi-Row Pattern (CRITICAL)
