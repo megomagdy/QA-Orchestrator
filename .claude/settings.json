@@ -15,8 +15,35 @@
     "deny": [
       "Read(./.env)",
       "Read(./**/.env)",
-      "Read(./scripts/.env)",
-      "Read(./workspace.config.json)"
+      "Read(./scripts/.env)"
     ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-files.mjs\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/check-frontmatter.mjs\""
+          }
+        ]
+      }
+    ]
+  },
+  "enabledMcpjsonServers": ["context7"],
+  "enabledPlugins": {
+    "claude-code-setup@claude-plugins-official": true
   }
 }

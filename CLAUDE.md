@@ -24,6 +24,12 @@ This repo **is** a Claude Code skill pack: 38 skills in `skills/`, 10 agents in 
 - `/add-qa-skill <name>` — scaffold a new pack skill and wire it into every catalog.
 - `/check-catalog` — report drift between `skills/`, `agents/` and the README/reference catalogs.
 
+## Automations (from the claude-code-setup plugin's recommendations)
+
+- **Hooks** (`.claude/hooks/`): edits to `.env` files are blocked; every edit to a `SKILL.md` or agent file is checked for valid frontmatter (`name` matches folder, `description`, agent `tools`), with a reminder to sync catalogs.
+- **MCP**: `context7` (`.mcp.json`) for current docs on Playwright, Appium, Maestro, axe-core, Allure, Postman, etc. when writing technique skills.
+- **Plugin**: `claude-code-setup` is enabled for the repo — run `/claude-code-setup:claude-automation-recommender` to revisit.
+
 ## Optional: route Claude Code through OmniRoute
 
 See `docs/OMNIROUTE.md`. Opt-in per machine via `.claude/settings.local.json`; nothing is committed.
