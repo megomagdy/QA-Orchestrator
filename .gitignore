@@ -6,6 +6,9 @@ scripts/.env
 # Per-user configuration (each engineer creates their own via /init-workspace)
 workspace.config.json
 
+# Claude Code per-machine settings (permissions, optional OmniRoute key)
+.claude/settings.local.json
+
 # Per-user tracker adapters may embed org-specific URLs — commit them only if
 # your whole team shares the tracker. Uncomment to keep adapters local:
 # scripts/adapters/*.js

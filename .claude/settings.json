@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(git status)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(ls:*)",
+      "Bash(node scripts/build-upload-zips.js)"
+    ],
+    "ask": [
+      "Bash(node scripts/report-bugs.js:*)",
+      "Bash(git push:*)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./**/.env)",
+      "Read(./scripts/.env)",
+      "Read(./workspace.config.json)"
+    ]
+  }
+}
