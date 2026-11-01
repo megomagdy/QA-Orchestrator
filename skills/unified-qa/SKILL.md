@@ -246,6 +246,17 @@ Preconditions must be **specific and reproducible** — anyone should be able to
 ✗ "Entity exists"           → What type? What state? Linked or unlinked?
 ```
 
+**Access line (first line of every precondition).** Start the precondition text with one line naming every portal and role the case needs, so execution can prepare all logins before a run (EXECUTION_PLAN Step 3c reads it):
+
+```
+Access: <Portal> as <Role>[; <Portal> as <Role>]      or      Access: none
+✓ "Access: Admin backoffice as Super Admin"
+✓ "Access: Admin backoffice as Super Admin; B2B portal as Agent"
+✓ "Access: API as Accountant"            (API cases: the role whose token is used)
+```
+
+Use the same portal and role names in every case of a project. The line is plain text inside the existing Precondition cell (multi-line); it never adds a column or changes the import template.
+
 ### 3.5 Test Design Techniques
 
 Apply in order of priority:

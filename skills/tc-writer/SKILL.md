@@ -50,6 +50,7 @@ Negative + Boundary + Edge combined must be at least 30% — negative alone typi
 - The final expected result names the distinguishing outcome (what was blocked / allowed / stored / shown, with the value) — two opposite-outcome cases never end in the same sentence.
 - When the feature replaces existing behaviour and code is available, every branch of the current code is a clause you cover or mark superseded.
 - Cross-story case: every story key in Story Linkages plus an `also-<KEY>` label.
-- Preconditions must be specific and reproducible, and must carry any eligibility gate the feature has.
+- Preconditions must be specific and reproducible, and must carry any eligibility gate the feature has. The first precondition line is `Access: <Portal> as <Role>` (several separated by `;`, or `Access: none`), plain text inside the Precondition cell — never a new column.
 - Get validation timing right — state WHERE validation fires (on input, on blur, on save, at submission).
 - Where an answer is still pending, write the case on a stated assumption and tag it (assumption-A1, REVISIT:) so one filter finds every case needing revision later.
+- Apply the Defect-Prevention Pass (`skills/write-tests/defect-prevention.md`) to every behaviour, whatever the feature: a step per relevant data shape (`data-<shape>` label); exact value + where it lives + every surface; effect AND stored record; the most likely wrong implementation must fail the step; expected values from the rule, never from current behaviour; no observation-only steps (an undecided rule makes the case `blocked-<question id>`); the per-type input checklist for every new field / endpoint; a sequence case per entity with states; one visual case per new screen; decision-ID labels on every case.

@@ -21,6 +21,11 @@ Read `qa-rules-condensed.md` from the project root for condensed QA rules.
 10. **Delta File Integrity** — Delta/correction file headers match main file
 11. **Duplicates** — two or more cases with the **same expected result** or that **verify the same thing**: state/screen/endpoint/persona variants of one rule as separate cases, or one case whose assertions are all inside another. Recommend merging into one case (variants as steps). Not duplicates: UI vs API enforcement, opposite outcomes, Verify vs Save timing, genuinely different designs. **Read every case per behaviour group** — a lexical similarity check is only a tripwire (on a real suite it flagged 65 pairs where reading found 210 duplicates). Also flag final expected results that don't name the case's own outcome (generic endings hide opposite outcomes).
 12. **Spec-silent gaps** — any behaviour listed as "not covered" or "no case written" because the spec doesn't answer it. It needs a case on a stated, tagged assumption (`REVISIT:`), not a gap entry.
+13. **Weak assertion** (defect-prevention P2) — for each case, name the most likely wrong implementation; flag the case if its steps would still pass. Also flag expected results that copy current behaviour instead of the rule, generic outcomes ("correct", "works", "updated"), observation-only steps, and an effect checked without its stored record.
+14. **Data-shape gap** (P1) — a rule-bearing behaviour run only on typical data: compare each case's `data-<shape>` labels with `data-variants.md`.
+15. **Sequence / visual / input gaps** (P3–P5) — an entity with states and no sequence case; a new screen with no visual case; a new field or endpoint without the per-type input checklist.
+16. **Decision drift** (P6) — a case or fixture that still follows a superseded decision, and passed results recorded before a decision changed.
+17. **Consumer gap** (P8) — an existing reader from the review's consumer sweep with no regression case; no planned run on a brand-new account / tenant.
 
 ## Agent Orchestration
 - **dom-auditor agent** → Verify UI elements in TCs actually exist in live app

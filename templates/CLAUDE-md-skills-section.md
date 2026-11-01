@@ -29,6 +29,7 @@
 | 21 | sync-global | `.claude/skills/sync-global/SKILL.md` | Promotes generalized project learnings back to the global folder |
 | 22 | init-project | `.claude/skills/init-project/SKILL.md` | Scaffolds a project: links skills/agents, copies the authored files |
 | 23 | init-workspace | `.claude/skills/init-workspace/SKILL.md` | One-time machine setup: links skills/agents, writes workspace.config.json |
+| 24 | verify-fix | `.claude/skills/verify-fix/SKILL.md` | Retest each In Testing bug + exploratory regression around its fix; retest record; tracker close / return on the user's go-ahead |
 
 ## Workflow → Skills Mapping
 
