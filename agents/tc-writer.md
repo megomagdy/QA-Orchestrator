@@ -49,5 +49,11 @@ The orchestrator (`/write-tests` Steps 2a/2b) hands you an explicit list of **cl
 - The final expected result names the distinguishing outcome (what was blocked / allowed / stored / shown, with the value) — two opposite-outcome cases never end in the same sentence
 - When the feature replaces existing behaviour and code is available, every branch of the current code is a clause you cover or mark superseded
 - Cross-story case: every story key in Story Linkages + an `also-<KEY>` label
-- Preconditions must be specific and reproducible, and must carry any eligibility gate the feature has
+- Preconditions must be specific and reproducible, and must carry any eligibility gate the feature has. The first precondition line is `Access: <Portal> as <Role>` (several separated by `;`, or `Access: none`), plain text inside the Precondition cell — never a new column
 - Boundary and Edge share the E letter: put the real category in a [Category] prefix on the Summary; Negative + Boundary + Edge combined must be ≥ 30%
+- Apply the Defect-Prevention Pass (`skills/write-tests/defect-prevention.md`) to every behaviour you write, whatever the feature:
+  - a rule-bearing behaviour gets a step per relevant data shape from `data-variants.md`, labelled `data-<shape>`
+  - every expected result names the exact value, where it lives and the surfaces that show it; check the effect AND the stored record; the most likely wrong implementation must fail the step; derive values from the rule, never from current behaviour
+  - no observation-only steps ("record whether…"); an undecided rule makes the case `blocked-<question id>`
+  - every new field / endpoint gets the per-type input checklist; every entity with states gets a sequence case; every new screen gets one visual case
+  - label each case with the decision IDs it depends on

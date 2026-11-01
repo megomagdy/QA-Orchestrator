@@ -122,12 +122,12 @@ QA-Global/
 │
 ├── 📁 skills/                      ← 37 skills (each = <name>/SKILL.md)
 │   │
-│   │   WORKFLOW COMMANDS (18) — the /commands of the journey:
+│   │   WORKFLOW COMMANDS (19) — the /commands of the journey:
 │   ├── init-workspace/  init-project/  save-url/
 │   ├── review/  gap-report-doc/  gap-report-push/  cache-build/
 │   ├── write-tests/  cross-validate/
 │   ├── scaffold-automation/  run-automation/
-│   ├── execute-tc/  bug-report/  report-bugs/
+│   ├── execute-tc/  verify-fix/  bug-report/  report-bugs/
 │   ├── learn/  sync-global/  checkpoint/  session-resume/
 │   │
 │   │   TECHNIQUE REFERENCES (19) — methodology & framework knowledge:
@@ -195,7 +195,7 @@ flowchart LR
 
 ## Skills Catalog
 
-### Workflow commands (18)
+### Workflow commands (19)
 
 | Command | Phase | What it does |
 |---|---|---|
@@ -211,6 +211,7 @@ flowchart LR
 | `/scaffold-automation` | Automate | Builds a Playwright framework: POM, fixtures, multi-env config, security/a11y/API specs, CI pipeline |
 | `/run-automation` | Automate | Runs the suite, categorizes failures, spawns healer for broken tests |
 | `/execute-tc` | Execute | Executes TCs via Chrome MCP with popup recovery; logs confirmed bugs + evidence into `Manual Execution/` |
+| `/verify-fix` | Retest | Retests every In Testing bug of a story and explores what each fix could have broken around it (per-bug regression charter); one retest record per run; closes / returns tickets only on your go-ahead |
 | `/bug-report` | Report | Writes one polished, tracker-ready bug report; queues it in `Bug Summaries.txt` |
 | `/report-bugs` | Report | Batch-reports `Bug Summaries.txt` via the zero-token script; auto-discovers and attaches evidence files |
 | `/learn` | Learn | Auto-documents session lessons into project CLAUDE.md + condensed rules |

@@ -19,7 +19,7 @@ Work Key | Summary | Description | Precondition | Status | Priority | Assignee |
 | Work Key | EMPTY always | Tool assigns on import |
 | Summary | TC first row | `[Category] Description` |
 | Description | TC first row | Optional longer description |
-| Precondition | TC first row | Multi-line with `\n` |
+| Precondition | TC first row | Multi-line with `\n`; first line `Access: <Portal> as <Role>[; ...]` or `Access: none` (text only — no extra column) |
 | Status | EMPTY always | Tool manages |
 | Priority | TC first row | `High` or `Medium` |
 | Assignee | TC first row | Account ID or empty |

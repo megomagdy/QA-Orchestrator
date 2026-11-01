@@ -44,6 +44,7 @@ After the user confirms a bug is real, ALSO append it as a one-liner to `Manual 
 
 ## Rules
 - One bug per ticket. Group related failures to same root cause.
+- A bug raised from a failing test case copies that step's exact state and data (do not swap in a different example state — a partial fix then passes verification), and "Affected TCs" names the case AND the failing step number, not every case in the area.
 - NEVER mark an environment issue as a bug
 - For API bugs: include full request + response
 - For mobile bugs: include device model, OS version

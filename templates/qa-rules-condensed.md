@@ -61,6 +61,15 @@ description: Condensed rules from all 16 QA skills. Load THIS instead of individ
 - Give TC writers requirements, not areas: traceability matrix (clause → behaviour → case) BEFORE writing; agents return a "not covered" list; a coverage gate fails on unmapped clauses, dangling IDs and orphan cases.
 - Spec-silent behaviour still gets a case, on a stated reasonable assumption (tag + REVISIT). "Not covered" is never a valid status.
 - Compute boundary fixtures from the system's actual formula, not the spec default — configurable bases override documented ones.
+- **Defect-Prevention Pass — every feature, not only money** (`skills/write-tests/defect-prevention.md`). Most escaped bugs sit in an area a case covered, missed by its data or its assertion:
+  - P1 every rule runs on the data shapes that break it (period lengths / boundaries, joiner / leaver / ended, duplicate "unique" values, empty optional fields, pre-release data, every entry point, brand-new account) — `data-variants.md` + `data-<shape>` labels.
+  - P2 a step must fail under the most likely wrong implementation: exact value + where it lives + every surface; effect AND stored record; values from the rule, never from current behaviour; no "record whether" steps.
+  - P3 per-type input checklist on every new field / endpoint, spec or not (typed dates in the locale format, picker views, limits, part > total, file at the limit, empty name parts in search, API refusals).
+  - P4 sequence cases per entity with states (create → edit → move → delete, edit back), re-checking earlier side effects.
+  - P5 one design-comparison case per new screen (colour per state, combined indicators).
+  - P6 a decision change updates expected results AND fixtures, and re-runs passed cases.
+  - P7 every clause → an asserting step, plus its implied negative.
+  - P8 one regression case per existing reader of the changed data, and one run on a brand-new account / tenant.
 
 ## 3. Form Validation Rules (from: form-validation-breaker)
 - Client-side validation is convenience, not defense. Always test server-side.

@@ -53,11 +53,16 @@ Run only the pillars the user confirmed available. Each resolves or upgrades fin
 - **Existing-code baseline cross-validation:** locate the current implementation of each touched surface; verify every "unchanged / not changing" claim against the code; trace the entity's full read→display→export path and flag single-record / status-based lookups that a new state could bypass; enumerate variant branches (entity types, engines, migrated-vs-legacy paths); capture current constants as test oracles. Stale-guard: read the branch that reflects what's DEPLOYED, not a stale local checkout; stamp findings with the commit/date.
 - **Current data store (read-only):** confirm entry-condition flags → select the test scope/tenant; verify the feature entity's schema (columns, statuses, contiguity, NULL vs value); hunt edge data (multi-record periods, unusual config, entity-type variants, unconfigured prerequisites); pull baseline rows as regression oracles. Guardrails: read-only, non-production, correct scope/tenant, no cross-scope/cross-tenant access.
 
+## Phase 5b: Defect-Prevention Inputs (every feature)
+Produce two lists that `/write-tests` turns into cases (see `skills/write-tests/defect-prevention.md`):
+- **Consumer sweep (P8):** every data item, field, status and endpoint the feature changes, and every EXISTING reader of each — reports, exports, dashboards, limit / validation checks, summaries, notifications, other modules, mobile, integrations. Search the code when available; otherwise walk the app. A reader no document mentions is still listed.
+- **Data shapes (P1):** the shapes of data the feature's rules read (period lengths and boundaries, lifecycle positions, duplicates of "unique" values, empty optional fields, pre-release data, every entry point, brand-new account / tenant). Note which shapes exist on the test environment today and which must be seeded. Also ask product which environment can give a brand-new account.
+
 ## Phase 6: Manual-Notes Reconciliation (if the user has notes)
 If the user provided (or has) a manual review, map every one of their notes against your findings: Covered (both) / Yours-only (they caught, you missed) / Mine-only / Resolved. Nothing from their notes is dropped.
 
 ## Phase 7: Completeness Gate (before output)
-Self-critique: What did I review from text only that should have been rendered? Which adjacent surfaces did I not check? Which "not changing" claims did I not verify against code/data? Which displayed number did I check only for reconciliation, not for meaning? List anything skipped explicitly.
+Self-critique: What did I review from text only that should have been rendered? Which adjacent surfaces did I not check? Which "not changing" claims did I not verify against code/data? Which displayed number did I check only for reconciliation, not for meaning? Which existing reader of the changed data is missing from the consumer sweep? Which data shape did I not look for on the environment? List anything skipped explicitly.
 
 ## Phase 8: Output
 See [output-format.md](output-format.md). Lead with an "Inputs consulted" header stating which ground-truth sources were used vs unavailable/declined, so reduced confidence is explicit.
