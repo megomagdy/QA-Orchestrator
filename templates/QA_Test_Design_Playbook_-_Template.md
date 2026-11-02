@@ -158,6 +158,64 @@ the frames rather than the reporter's summary: recordings routinely carry detail
 
 **22. Report execution as "N of M ran", never as a suite pass.** A favourable summary over partial
 coverage reads as a green light. State the denominator, and mark untested cases explicitly.
+
+**23. Comparing sources finds contradictions, not silence — build the data-shape and lifecycle list
+before writing questions.** Per {ENTITY}: the same change made twice in one period, records in progress at
+release (saved drafts, pending requests, scheduled changes), past rows after a later correction (frozen or
+recalculated?), every variant of related entries, and extreme ranges (including whether a maximum exists).
+**Why:** a builder's review raised six questions a source-comparison review missed, all from these shapes.
+
+**24. Ask every action for every entity, view included.** Build an entity × action matrix (view, create,
+edit, delete, export, bulk, API, on behalf of someone) and never inherit the action list from how a source
+phrased its question. **Why:** a decisions page listed only write actions; "does viewing need a
+permission?" was never asked.
+
+**25. Do an implementer pass.** For every screen and form, list its loading / calculating, empty, error,
+no-permission, disabled and limit states, and every input's bounds; raise each one no source defines.
+**Why:** a design's "calculating" state was noted, but the question behind it (is there a maximum length?)
+was asked only by the developer.
+
+**26. Check every absolute word in the spec against its exceptions.** "Exactly", "always", "never",
+"only", "every": find exceptions stated elsewhere and flag a missing cross-reference. **Why:** "a refund
+returns exactly the counted days" contradicted a closed-period exception two sections away.
+
+**27. Design readers share one checklist and flag, not transcribe.** Every reader compares messages
+word for word with the spec, values with its tables, and treats a fixed calendar year in copy as suspect
+when the period is configurable. **Why:** one reader flagged a calendar year in a preview; another
+transcribed the same mistake in a dialog without flagging it.
+
+**28. "Covered" means a flagged finding raised it.** When reconciling another reviewer's notes, cite the
+finding ID; text that only appears in an inventory is not coverage, and keyword search never decides it.
+Check their design quotes against the pixels: notes taken from text layers quote labels that don't render.
+**Why:** a keyword match reported a teammate's design notes as all covered; two had only been transcribed.
+
+**29. Read rules together for every record state that changes what's allowed.** For a closed or locked
+period, a past date or a scheduled change, list every rule acting on a record in that state and every
+surface that shows it, and write the combined outcome. **Why:** "a cancelled past {ENTITY} shows as absent"
+and "a closed cycle is never updated" were each read and never combined.
+
+**30. Sweep domain attributes for every eligibility-gated type.** Beyond what the spec names, ask which
+attributes the law or domain implies (religion, nationality, marital status, age, contract type) and check
+the data store for them and their empty values. **Why:** a religious-pilgrimage leave was checked for
+gender and service only, while the employee record held a religion field.
+
+**31. Map every validation rule to an error-state frame, and check mock data inside each frame.** The shown
+state must follow from the shown data, names must match the page, dates use one format. **Why:** an error
+frame showed a valid date as invalid, while the error users will really hit had no frame.
+
+**32. Answered is not visible.** Give every calculation, ordering rule and displayed column a worked example
+at its boundary in Confirmed Behaviors. **Why:** half of a stakeholder's questions were answered in the spec
+but never surfaced by the review, so they looked open.
+
+**33. Push the whole report to the questions tracker, and verify the push against it.** Inventory every open
+item first — questions, conflicts with no matching question, decision findings, design divergences (one
+combined entry) — and give each an entry, a named mapping, or an explicit exclusion. Re-query the tracker and
+compare counts. **Why:** a push of "the open questions" dropped a conflict, three findings and every design
+divergence; the gap showed only when counts were compared with the report's summary page.
+
+**34. Judge tracker answers by content, not by their Status.** Deferrals and requests for clarification get
+marked "Answered"; "as today" answers must be checked against what today actually is. **Why:** several
+"Answered" rows decided nothing, and one "as today" answer contradicted the spec once today's code was read.
 ### 2.2 Investigation Workflow (Decision Tree)
 
 ```
@@ -550,7 +608,6 @@ These defect patterns are commonly observed in web applications. Actively test f
 | 12 | Design-Story text mismatch | Design labels, headings, or button text differ from story AC text | Compare every visible text element in design files against the corresponding story AC or localization table. Flag mismatches as open questions — do not assume either source is correct. |
 | 13 | Intra-story AC contradiction | Two acceptance criteria within the SAME story directly contradict each other. More impactful than cross-story contradictions because the developer cannot implement both. | Read all ACs holistically within each story, checking for logical consistency. Flag contradictions as CRITICAL priority since they block both development and testing. |
 | 14 | PRD-Story business rule conflict | PRD defines one validation rule while the story defines a different rule. These conflicts are invisible when only comparing stories vs design — the PRD must be cross-referenced independently. | Perform three-way cross-reference: PRD functional requirements vs story ACs vs design files. When the PRD and story disagree on a business rule, raise as "PRD vs Story Conflict" category at CRITICAL priority. |
-
 | 15 | Automation covers ~40% of manual bugs | Functional automation misses visual/design compliance, RTL layout, icon sizing, column alignment | Pair functional automation with visual regression tools (Percy/Applitools). Automation alone is insufficient for UI polish. (Added: 2026-03-28) |
 | 16 | Backend API rejects empty arrays in required collection fields | API seeding with empty arrays (e.g., `items: []`) returns 422 even when the field is semantically optional | Always verify API payloads with a test call before building seed helpers. Never assume empty arrays are accepted. (Added: 2026-03-28) |
 | 17 | Custom component items rendered as `button` elements, not standard list/option roles | Drawer/panel list items may be full-width buttons with composite accessible names instead of `mat-list-item`, `role=option`, or `role=radio` | Always check accessibility snapshot for actual element roles before writing selectors. Use `getByRole('button').filter({ hasText: /distinguishing-text/ })`. (Added: 2026-03-28) |
@@ -1050,6 +1107,18 @@ When adding new content to this file:
 | 127 | 2026-10-07 | **The lexical duplicate gate is a tripwire, not a review.** Always do a reading pass per behaviour group (now in /write-tests Duplicate Gate). **Why:** A similarity gate flagged 65 pairs; reading every case merged 205. | 7.1 |
 | 128 | 2026-10-07 | **Enumerating branches in the current code finds clauses no document states.** Each branch of the code being replaced is a clause (now in /write-tests Step 2a; see also 10.115). **Why:** A refusal rule for a missing prerequisite had no case and no AC. | 2.3 |
 | 129 | 2026-10-07 | **Parallel agents sharing a tool with a fixed temp file overwrite each other.** Give each run its own temp directory (and browser profile). **Why:** A crop tool returned another board's frame until runs got per-run temp dirs. | 11 |
+| 130 | 2026-11-02 | **Build the data-shape and lifecycle list before writing review questions.** Repeated changes, records in progress at release, past rows after a correction, every variant of related entries, extreme ranges (now /review Phase 2b). **Why:** Six builder questions were missed by a source-comparison review. | 2.1 #23 |
+| 131 | 2026-11-02 | **Ask every action for every entity, view included; never inherit the action list from a source's question.** **Why:** A decisions page listed only write actions and viewing permission went unasked. | 2.1 #24 |
+| 132 | 2026-11-02 | **Implementer pass: every screen's loading, empty, error, no-permission and limit states.** **Why:** A "calculating" state was noted but its question (maximum length?) was missed. | 2.1 #25 |
+| 133 | 2026-11-02 | **Check every absolute word in the spec ("exactly", "always", "never") against exceptions elsewhere.** **Why:** An "exactly" rule contradicted a closed-period exception with no cross-reference. | 2.1 #26 |
+| 134 | 2026-11-02 | **Design readers share one checklist (messages word for word, values, fixed calendar years in copy) and flag rather than transcribe.** **Why:** The same calendar-year mistake was flagged by one reader and only transcribed by another. | 2.1 #27 |
+| 135 | 2026-11-02 | **"Covered" needs a flagged finding ID, never a keyword match; check teammates' text-layer quotes against the pixels.** **Why:** A keyword match reported a teammate's design notes as all covered; two had only been transcribed. | 2.1 #28 |
+| 136 | 2026-11-02 | **Read rules together for every record state that changes what's allowed (closed period, past, scheduled), across every surface.** **Why:** Two handoff rules on the same closed-period day contradicted and were never read together. | 2.1 #29 |
+| 137 | 2026-11-02 | **Sweep domain attributes for every eligibility-gated type and check the data for them.** **Why:** A religious leave was gated on gender and service only although the record held religion. | 2.1 #30 |
+| 138 | 2026-11-02 | **Map every validation rule to an error-state frame and check mock data inside each frame.** **Why:** An error frame flagged a valid date; the real error had no frame. | 2.1 #31 |
+| 139 | 2026-11-02 | **Every calculation, ordering rule and displayed column gets a worked example in Confirmed Behaviors.** **Why:** Answered questions looked open because the review never surfaced them. | 2.1 #32 |
+| 140 | 2026-11-02 | **Push the whole report to the questions tracker (questions, unmapped conflicts, decision findings, one combined design entry) and verify the push against that inventory.** **Why:** A questions-only push dropped a conflict, three findings and every design divergence. | 2.1 #33 |
+| 141 | 2026-11-02 | **Judge tracker answers by content, not by their Status; check "as today" answers against today's code.** **Why:** Several "Answered" rows decided nothing. | 2.1 #34 |
 | 130 | 2026-10-07 | **`node -e` through bash strips regex backslashes and still parses.** Write any edit that touches a regex as a script file, not an inline `node -e`. **Why:** `\d` became `d` and `\b` a backspace byte, silently changing the pattern. | 11 |
 <!-- Append new learnings here as they arise -->
 

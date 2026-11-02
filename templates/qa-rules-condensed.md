@@ -38,6 +38,18 @@ description: Condensed rules from all 16 QA skills. Load THIS instead of individ
 - Screen recordings are first-class DOM evidence when the app is unreachable: metadata, then an overview frame grid, then frames at the interesting timestamps.
 - Reproduce bug steps from the recording frames, not the reporter's one-liner — recordings carry detail summaries omit.
 - Report execution as "N of M ran", never as a suite pass. State the denominator and mark untested cases explicitly.
+- Before writing review questions, list data shapes and lifecycles: repeated changes, records in progress at release, past rows after corrections, every variant of related entries, extreme ranges (see 2.1 #23).
+- Ask every action for every entity, VIEW included; never inherit the action list from a source's question (2.1 #24).
+- Implementer pass: every screen's loading, empty, error, no-permission and limit states, and every input's bounds (2.1 #25).
+- Check every "exactly / always / never / only" in the spec against exceptions elsewhere (2.1 #26).
+- Design readers share one checklist — messages word for word, values, fixed calendar years in copy — and flag rather than transcribe (2.1 #27).
+- "Covered" requires a flagged finding ID, never a keyword match; check teammates' text-layer quotes against pixels (2.1 #28).
+- Read rules together for each record state that changes what's allowed (closed period, past, scheduled), across every surface (2.1 #29).
+- Sweep domain attributes for every eligibility-gated type (religion, nationality, marital status, age) and check the data (2.1 #30).
+- Map every validation rule to an error-state frame; check mock data inside each frame (2.1 #31).
+- Every calculation, ordering rule and displayed column gets a worked example in Confirmed Behaviors (2.1 #32).
+- Push the whole report to the questions tracker (questions, unmapped conflicts, decision findings, one combined design entry); re-query and match the inventory (2.1 #33).
+- Judge tracker answers by content, not the Status field; check "as today" answers against today's code (2.1 #34).
 
 ## 2. Test Case Design Rules (from: unified-qa, test-plan-generation)
 - TC ID: E{epic#}-{type}-{seq}. Types: P=Positive, N=Negative, E=Edge, S=Security, L=Localization.
