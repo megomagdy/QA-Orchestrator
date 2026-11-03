@@ -60,11 +60,11 @@ ${extra}</style></head><body>${body}</body></html>`;
 const journey = () => {
   const phases = [
     ["🏁 SETUP — once per machine, once per project", "Skills and agents are LINKED to the global folder, never copied — so every project runs the same, current version.", ["/init-workspace", "/init-project"]],
-    ["🔍 INVESTIGATE", "Register sources, then cross-review docs against ground truth: rendered prototype, live app, existing code, current data. Raise only real gaps.", ["/save-url", "/review", "/cache-build", "/gap-report-doc", "/gap-report-push"]],
+    ["🔍 INVESTIGATE", "Register sources, then cross-review docs against ground truth: rendered prototype, live app, existing code, current data. Today's behaviour is answered from code and data; product is asked only about new behaviour.", ["/save-url", "/review", "/cache-build", "/gap-report-doc", "/gap-report-push"]],
     ["✍️ DESIGN TESTS", "SFDP decomposition + coverage matrix (negative/boundary/edge ≥ 30% combined). Outputs Markdown plus an import file matching your test tool.", ["/write-tests", "/cross-validate"]],
     ["🤖 AUTOMATE", "Page-Object framework, auth-state reuse, multi-env config, CI wiring — then run, triage, and heal.", ["/scaffold-automation", "/run-automation"]],
     ["🖱️ EXECUTE MANUALLY", "Drive the real browser, capture evidence, log confirmed bugs as one-liners per epic.", ["/execute-tc"]],
-    ["🐞 REPORT", "Batch-create tracker issues through a pluggable adapter and auto-attach the evidence.", ["/report-bugs", "/bug-report"]],
+    ["🐞 REPORT & RETEST", "Batch-create tracker issues through a pluggable adapter and auto-attach the evidence. When fixes land, retest each bug and explore what the fix could have broken.", ["/report-bugs", "/bug-report", "/verify-fix"]],
     ["🧠 LEARN & SYNC", "Document what the session taught, then promote the generalizable parts back to the global folder for the next project.", ["/learn", "/sync-global"]],
   ];
   const body = `
@@ -85,7 +85,7 @@ const journey = () => {
 /* ─────────── 2. FILE FLOW (the updated one) ─────────── */
 const fileFlow = () => {
   const rows = [
-    ["skills/", ".claude/skills/", "LINK", "37 skills — one copy on disk, shared by every project"],
+    ["skills/", ".claude/skills/", "LINK", "39 skills — one copy on disk, shared by every project"],
     ["agents/", ".claude/agents/", "LINK", "10 subagents — same instance everywhere"],
     ["scripts/ + adapters/", "$QA_GLOBAL_HOME", "LINK", "invoked in place; never duplicated"],
     ["templates/playbook", "CLAUDE.md", "COPY", "project fills placeholders and writes its own lessons log"],
@@ -205,7 +205,7 @@ const info = () => {
     ["♻️", "Learnings compound", "Every session can promote what it learned back to the global folder, so the next project starts ahead."],
   ];
   const extra = `
-  body{width:1600px;height:1040px;padding:44px 50px;display:flex;flex-direction:column}
+  body{width:1600px;height:860px;padding:44px 50px;display:flex;flex-direction:column}
   h1{font-size:45px}
   .count{margin-top:16px;font-family:Consolas,monospace;font-size:17px;color:var(--cyan);
     border:1px solid var(--border);background:var(--card);border-radius:9px;padding:11px 18px;display:inline-block}
@@ -222,7 +222,7 @@ const info = () => {
     <h1>QA-Orchestrator — <span class="accent">portable QA infrastructure</span> for Claude Code</h1>
     <div class="sub" style="font-size:17px">A shareable global folder that gives an agent a complete QA methodology:
     investigation, gap analysis, test design, automation, execution, bug reporting — and a memory that compounds.</div>
-    <div class="count">37 SKILLS &nbsp;•&nbsp; 10 AI AGENTS &nbsp;•&nbsp; ANY TRACKER · ANY TEST TOOL · ANY STACK</div>
+    <div class="count">39 SKILLS &nbsp;•&nbsp; 10 AI AGENTS &nbsp;•&nbsp; ANY TRACKER · ANY TEST TOOL · ANY STACK</div>
   </div>
   <div class="grid">
     ${pillars.map(([i, t, d]) => `<div class="p"><div class="i">${i}</div><div class="t">${t}</div><div class="d">${d}</div></div>`).join("")}
@@ -230,7 +230,7 @@ const info = () => {
   <div class="strip">
     <span>/init-workspace</span><span>/init-project</span><span>/save-url</span><span>/review</span>
     <span>/write-tests</span><span>/cross-validate</span><span>/scaffold-automation</span><span>/run-automation</span>
-    <span>/execute-tc</span><span>/report-bugs</span><span>/learn</span><span>/sync-global</span>
+    <span>/execute-tc</span><span>/report-bugs</span><span>/verify-fix</span><span>/learn</span><span>/sync-global</span>
   </div>`;
   return page("QA-Orchestrator", 1600, body, extra);
 };

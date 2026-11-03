@@ -50,10 +50,10 @@ flowchart TD
 
     subgraph P1["🔍 PHASE 1 — INVESTIGATE"]
         SU["/save-url<br/><i>register PRD, designs,<br/>tracker, API spec URLs</i>"]
-        RV["/review<br/><i>cross-review PRD vs stories<br/>vs designs — find real gaps</i>"]
+        RV["/review<br/><i>cross-review the docs, then check<br/>code, data and the live app</i>"]
         CB["/cache-build<br/><i>cache findings<br/>(60-70% token savings)</i>"]
-        GD["/gap-report-doc<br/><i>Word report of questions<br/>for your own review</i>"]
-        GP["/gap-report-push<br/><i>push approved questions to<br/>the team's questions tracker</i>"]
+        GD["/gap-report-doc<br/><i>shareable report of questions<br/>for your own review</i>"]
+        GP["/gap-report-push<br/><i>push every open item to the<br/>questions tracker + verify</i>"]
         WAIT{{"⏳ product team answers"}}
         SU --> RV --> CB --> GD --> GP --> WAIT
         WAIT -->|"re-investigate<br/>with answers"| RV
@@ -72,14 +72,16 @@ flowchart TD
     end
 
     subgraph P4["🖱️ PHASE 4 — EXECUTE MANUALLY"]
-        ET["/execute-tc<br/><i>drive the browser via MCP,<br/>screenshot failures</i>"]
+        ET["/execute-tc<br/><i>drive any browser tool,<br/>screenshot failures</i>"]
         LOG["confirmed bugs →<br/>Manual Execution/Bug Summaries.txt<br/>+ evidence files"]
         ET --> LOG
     end
 
-    subgraph P5["🐞 PHASE 5 — REPORT"]
+    subgraph P5["🐞 PHASE 5 — REPORT & RETEST"]
         RB["/report-bugs<br/><i>batch-create tracker issues +<br/>auto-attach evidence (zero tokens)</i>"]
         BR["/bug-report<br/><i>single polished report<br/>for one-off bugs</i>"]
+        VF["/verify-fix<br/><i>retest In Testing bugs +<br/>explore what each fix broke</i>"]
+        RB --> VF
     end
 
     subgraph P6["🧠 PHASE 6 — LEARN & SYNC"]
@@ -98,15 +100,15 @@ flowchart TD
 
 **🏁 Setup.** `/init-workspace` runs once per user: **links** skills/agents user-level so every command works in any folder, sets `QA_GLOBAL_HOME`, and records your company's tools in `workspace.config.json`. `/init-project` runs once per project: it **links** skills + agents to this folder (never copies — see [LINK-VS-COPY.md](LINK-VS-COPY.md)), then **copies** the files the project authors — `CLAUDE.md` from the playbook template (13 setup questions fill the placeholders), `qa-rules-condensed.md`, the `Manual Execution/` folder, and your test tool's import template.
 
-**🔍 Phase 1 — Investigate.** `/save-url` registers every reference URL so no session ever re-asks for them. `/review` cross-references PRD ↔ user stories ↔ design files with two-pass self-verification (so it raises only *real* gaps, not questions the docs already answer) — for large scopes it spawns **qa-reviewer** agents to deep-read each document in parallel, and consults the security/accessibility/validation technique skills to catch missing requirements. `/cache-build` freezes the findings into cache files that later commands read instead of re-analyzing everything. `/gap-report-doc` turns findings into a Word report you review; `/gap-report-push` pushes the approved questions to your team's questions tracker. When product answers arrive, the skill mandates a **re-investigation pass** — an answer to question A often invalidates assumption B.
+**🔍 Phase 1 — Investigate.** `/save-url` registers every reference URL so no session ever re-asks for them. `/review` cross-references PRD ↔ user stories ↔ design files with two-pass self-verification (so it raises only *real* gaps, not questions the docs already answer), then checks today's behaviour in the code, the data and the live app — product is asked only about new behaviour, and today's behaviour that affects users comes back as a keep-or-change question — for large scopes it spawns **qa-reviewer** agents to deep-read each document in parallel, and consults the security/accessibility/validation technique skills to catch missing requirements. `/cache-build` freezes the findings into cache files that later commands read instead of re-analyzing everything. `/gap-report-doc` turns findings into a report in your team's document format for you to review; `/gap-report-push` pushes every open item (questions, conflicts, decision findings, design divergences) to your team's questions tracker and verifies the push against the report. When product answers arrive, the skill mandates a **re-investigation pass** — an answer to question A often invalidates assumption B.
 
 **✍️ Phase 2 — Design tests.** `/write-tests` applies the SFDP decomposition framework (States, Fields, Data, Permissions) and the coverage matrix (happy/negative/boundary/edge/security/accessibility/localization, negatives ≥ 30%). Before any case is written it builds a **requirement clause inventory** (traceability matrix: clause → behaviour → case) and a **behaviour inventory** (one behaviour = one case, variants as steps), so nothing is missed and nothing is duplicated. For 5+ stories it then spawns **tc-writer** agents in parallel with disjoint behaviour lists, each returning a "not covered" list, plus **security-scanner** and **a11y-auditor** for specialized cases. Spec-silent behaviours get a case on a stated assumption, and a **coverage gate** and a **duplicate gate** must pass before output. Output: readable Markdown + an Excel file matching *your* test tool's import template exactly. `/cross-validate` then audits every expected result against QC decisions and the live DOM — spawning **dom-auditor** to catch "ghost elements" (UI that exists in specs but not in the app).
 
 **🤖 Phase 3 — Automate.** `/scaffold-automation` builds a production-grade Playwright framework (Page Object Model, auth-state reuse, multi-environment config, CI pipeline) — **playwright-test-planner** explores the live app to design scenarios and **playwright-test-generator** writes specs while verifying every selector against the real DOM. `/run-automation` executes the suite, then spawns **bug-hunter** to classify failures (real bug vs. locator drift vs. timing vs. environment) and **playwright-test-healer** to fix broken tests — never the app.
 
-**🖱️ Phase 4 — Execute manually.** `/execute-tc` drives the browser through your test cases via Chrome MCP, with a 5-step popup recovery protocol before any test is marked blocked. **api-tester** verifies API-level cases. After execution, **bug-hunter** triages the failures and **dom-auditor** confirms the UI facts. Every confirmed bug is appended as a one-liner to `Manual Execution/Bug Summaries.txt` and its screenshot/recording saved under the evidence naming convention.
+**🖱️ Phase 4 — Execute manually.** `/execute-tc` drives the browser through your test cases with whatever browser tool the session has (built-in browser, extension, Playwright or Selenium MCP), with a 5-step popup recovery protocol before any test is marked blocked. **api-tester** verifies API-level cases. After execution, **bug-hunter** triages the failures and **dom-auditor** confirms the UI facts. Every confirmed bug is appended as a one-liner to `Manual Execution/Bug Summaries.txt` and its screenshot/recording saved under the evidence naming convention.
 
-**🐞 Phase 5 — Report.** `/report-bugs` is the batch reporter: Claude polishes each one-liner into a professional bug report (summary, steps, expected/actual, environment) and auto-maps it to the right parent story; then a plain Node.js script creates the issues through your tracker's adapter and **uploads each bug's evidence files automatically** — zero LLM tokens spent on API calls. `/bug-report` writes a single polished report when you need one immediately.
+**🐞 Phase 5 — Report & retest.** `/report-bugs` is the batch reporter: Claude polishes each one-liner into a professional bug report (summary, steps, expected/actual, environment) and auto-maps it to the right parent story; then a plain Node.js script creates the issues through your tracker's adapter and **uploads each bug's evidence files automatically** — zero LLM tokens spent on API calls. `/bug-report` writes a single polished report when you need one immediately. When fixes land, `/verify-fix` retests each In Testing bug and explores what the fix could have broken around it, writing one retest record per run; tickets are closed or returned only on your go-ahead.
 
 **🧠 Phase 6 — Learn & sync.** `/learn` documents session discoveries (QC decisions, defect patterns, tool quirks, corrections) into the project's CLAUDE.md. `/sync-global` generalizes them — strips project names, story keys, entity names — and pushes them into the global templates. **Your next project starts with everything every previous project learned.**
 
@@ -213,15 +215,15 @@ flowchart LR
 | `/init-workspace` | Setup | One-time wizard: your tracker/test tool/docs platform, `QA_GLOBAL_HOME`, user-level skill install, optional tracker adapter |
 | `/init-project` | Setup | Full project scaffold: CLAUDE.md playbook, skills/agents, `Manual Execution/`, test-tool template, 13 setup questions |
 | `/save-url` | Investigate | Registers reference URLs (PRD, designs, tracker, API) in `project-references.md` — available to every later command |
-| `/review` | Investigate | Cross-reviews PRD ↔ stories ↔ designs with two-pass self-verification; outputs real gaps, conflicts, and confirmed behaviors |
+| `/review` | Investigate | Cross-reviews PRD ↔ stories ↔ designs with two-pass self-verification; checks today's behaviour in code, data and the live app; outputs real gaps, conflicts, and confirmed behaviors |
 | `/cache-build` | Investigate | Caches investigation output so later commands skip re-analysis (60–70% token savings) |
-| `/gap-report-doc` | Investigate | Turns review findings into a color-coded Word report for stakeholder review |
-| `/gap-report-push` | Investigate | Pushes approved questions to your questions tracker (Notion / Confluence / ADO wiki / SharePoint / …) |
+| `/gap-report-doc` | Investigate | Turns review findings into a shareable report (Word, Google Doc, PDF or wiki page) for stakeholder review |
+| `/gap-report-push` | Investigate | Pushes every open item of the report to your questions tracker (Notion / Confluence / ADO wiki / SharePoint / …) and verifies the push against it |
 | `/write-tests` | Design | Generates full-coverage test cases (SFDP framework) → Markdown + Excel matching your test tool's template |
 | `/cross-validate` | Design | Audits generated TCs against QC decisions, docs, and live DOM; catches contradictions and ghost elements |
 | `/scaffold-automation` | Automate | Builds a Playwright framework: POM, fixtures, multi-env config, security/a11y/API specs, CI pipeline |
 | `/run-automation` | Automate | Runs the suite, categorizes failures, spawns healer for broken tests |
-| `/execute-tc` | Execute | Executes TCs via Chrome MCP with popup recovery; logs confirmed bugs + evidence into `Manual Execution/` |
+| `/execute-tc` | Execute | Executes TCs via any browser-automation tool with popup recovery; logs confirmed bugs + evidence into `Manual Execution/` |
 | `/verify-fix` | Retest | Retests every In Testing bug of a story and explores what each fix could have broken around it (per-bug regression charter); one retest record per run; closes / returns tickets only on your go-ahead |
 | `/bug-report` | Report | Writes one polished, tracker-ready bug report; queues it in `Bug Summaries.txt` |
 | `/report-bugs` | Report | Batch-reports `Bug Summaries.txt` via the zero-token script; auto-discovers and attaches evidence files |
@@ -267,7 +269,7 @@ Agents run in **isolated context** — they do focused heavy work in parallel an
 | `tc-writer` | `/write-tests` | Generates test cases per epic in parallel, following SFDP + your import format |
 | `security-scanner` | `/write-tests`, `/review` | OWASP Top 10 + auth-bypass review of specs and configs |
 | `a11y-auditor` | `/write-tests`, `/execute-tc` | axe-core / WCAG 2.1 AA accessibility audits |
-| `dom-auditor` | `/cross-validate`, `/execute-tc` | Inspects the live app via Chrome MCP; catches ghost elements before they become always-failing tests |
+| `dom-auditor` | `/cross-validate`, `/execute-tc` | Inspects the live app via the available browser tool; catches ghost elements before they become always-failing tests |
 | `api-tester` | `/execute-tc` | Executes API requests; verifies contracts, status codes, schemas |
 | `bug-hunter` | `/execute-tc`, `/run-automation` | Classifies failures (real bug / locator / timing / environment / flaky), groups duplicates, prepares `Bug Summaries.txt` lines |
 | `playwright-test-planner` | `/scaffold-automation` | Explores the live app and designs the test plan |
