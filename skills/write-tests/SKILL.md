@@ -41,6 +41,11 @@ Missed cases happen when writers are given **areas** ("the admin panel") instead
 
 Columns: `C-ID | Clause | Source (§ / QC / design frame / code branch / implied) | B-ID(s) | Case ID(s) | Status`. Status is **covered**, **out of scope (cite the Out-of-Scope list)**, **deferred (reason)** or **superseded (by <decision>)** for a clause a later decision replaced (name the decision; the replacing decision's own clause carries the case). "Not covered" is not an allowed status. A spec-silent clause is covered on a stated reasonable assumption (tag + `REVISIT:`).
 
+**Conflicts found while writing.** Writing exact expected results surfaces conflicts the review missed (two clauses that disagree, an "as today" answer that today's code contradicts, a displayed value that looks wrong). Collect every one into a single list; never resolve one silently inside a case.
+- **Before the review is signed off:** raise the list with product.
+- **After sign-off:** don't reopen it. Decide each conflict as the product owner would most likely answer, from their earlier answers (their usual preference, such as "as today" or "the spec text is final", and the answer closest to the clause). Record each decision as an assumption with its basis (which earlier answer or clause), tag the cases, and show the user the conflict, the decision and the basis in a table.
+**Why:** on one feature, nine conflicts surfaced only while the cases were being written (one rule's credit timing vs another's, a later "as today" answer vs a working-day rule, a display formula producing "9 of 6"). The review was signed off, and the user asked for the product owner's likely answer instead of new questions.
+
 Each clause maps to a behaviour (Step 2b), and each behaviour to exactly one case. So the chain **clause → behaviour → case** is complete before writing starts, and it's what the agents receive.
 
 ### Step 2b: Behaviour Inventory — no duplicates by design (MANDATORY, before writing any case)
