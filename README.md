@@ -72,8 +72,8 @@ flowchart TD
     end
 
     subgraph P4["🖱️ PHASE 4 — EXECUTE MANUALLY"]
-        ET["/execute-tc<br/><i>drive any browser tool,<br/>screenshot failures</i>"]
-        LOG["confirmed bugs →<br/>Manual Execution/Bug Summaries.txt<br/>+ evidence files"]
+        ET["/execute-tc<br/><i>run a cycle, or prepare it<br/>for a person to run</i>"]
+        LOG["confirmed bugs →<br/>the project's bug queue<br/>+ evidence files"]
         ET --> LOG
     end
 
@@ -106,7 +106,7 @@ flowchart TD
 
 **🤖 Phase 3 — Automate.** `/scaffold-automation` builds a production-grade Playwright framework (Page Object Model, auth-state reuse, multi-environment config, CI pipeline) — **playwright-test-planner** explores the live app to design scenarios and **playwright-test-generator** writes specs while verifying every selector against the real DOM. `/run-automation` executes the suite, then spawns **bug-hunter** to classify failures (real bug vs. locator drift vs. timing vs. environment) and **playwright-test-healer** to fix broken tests — never the app.
 
-**🖱️ Phase 4 — Execute manually.** `/execute-tc` drives the browser through your test cases with whatever browser tool the session has (built-in browser, extension, Playwright or Selenium MCP), with a 5-step popup recovery protocol before any test is marked blocked. **api-tester** verifies API-level cases. After execution, **bug-hunter** triages the failures and **dom-auditor** confirms the UI facts. Every confirmed bug is appended as a one-liner to `Manual Execution/Bug Summaries.txt` and its screenshot/recording saved under the evidence naming convention.
+**🖱️ Phase 4 — Execute manually.** `/execute-tc` works one test cycle at a time: Claude runs the cases through whatever UI-automation tool the session has (web, mobile or desktop; e.g. a built-in browser, an extension, or a Playwright or Selenium MCP), or prepares and verifies each case so a person can run it. It keeps a working list, a results file with evidence and a handoff file, and tries a 5-step UI recovery before giving up on a step. Deviations become candidates that you rule on; only confirmed bugs go to the bug queue, with their evidence, where the project files say (by default, where `/report-bugs` reads). Optional helpers, if available: **api-tester** for API-level cases, **bug-hunter** to triage failures, **dom-auditor** to confirm UI facts.
 
 **🐞 Phase 5 — Report & retest.** `/report-bugs` is the batch reporter: Claude polishes each one-liner into a professional bug report (summary, steps, expected/actual, environment) and auto-maps it to the right parent story; then a plain Node.js script creates the issues through your tracker's adapter and **uploads each bug's evidence files automatically** — zero LLM tokens spent on API calls. `/bug-report` writes a single polished report when you need one immediately. When fixes land, `/verify-fix` retests each In Testing bug and explores what the fix could have broken around it, writing one retest record per run; tickets are closed or returned only on your go-ahead.
 
