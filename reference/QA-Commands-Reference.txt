@@ -109,20 +109,23 @@ PHASE 3: AUTOMATION
 PHASE 4: MANUAL & MCP EXECUTION
 ────────────────────────────────
 
-  /execute-tc [TC-ID or "all" or epic-name]
-  ──────────────────────────────────────────
-  Executes test cases via Chrome MCP (browser control). The key
-  feature is a 5-step popup recovery protocol: before marking any
-  test as failed, Claude tries close button → cancel button → Escape
-  key → click outside → assess if popup is part of the flow. Only
-  marks as BLOCKED (not FAILED) if all recovery fails. Includes
-  iOS/mobile-specific handling (touch, keyboard overlay, dropdown
-  rendering on WebKit). Screenshots every key step. Classifies
-  results as PASS, FAIL (actual bug only), or BLOCKED (obstacle).
-  Confirmed bugs are appended to Manual Execution/Bug Summaries.txt
-  with evidence saved per the folder convention, ready for
-  /report-bugs batch reporting.
-  Output: Execution report with failed TCs ready for /bug-report.
+  /execute-tc [case id(s), a test cycle, or all]
+  ──────────────────────────────────────────────
+  Executes one test cycle at a time against the live test
+  environment, in two modes: Claude runs the cases through the
+  session's UI-automation tool (web, mobile or desktop), or Claude
+  prepares and verifies each case so a person can run it. Behaviour
+  rules come first: nothing is written to the test tool or tracker
+  without your yes; sensitive fields are left to you; every write is
+  backed up and reversible; a fix is judged only on a build that
+  contains it. Statuses: Pass, Fail, Blocked (only by a named failed
+  case), Not complete, Not applicable, mapped to your tool's own;
+  coverage is reported as "N of M ran". Deviations become candidates
+  that you rule on; confirmed bugs go to the bug queue the project
+  files define, ready for /report-bugs. A 5-step UI recovery runs
+  before any case is given up as Not complete.
+  Output: working list, results file with evidence, defect index,
+  handoff file and a closing report.
 
 
 PHASE 5: REPORTING
@@ -302,7 +305,7 @@ WORKSPACE & PROJECT SETUP
   9. /cross-validate → Audit test cases for contradictions
   10. /scaffold-automation → Set up Playwright framework
   11. /run-automation → Execute automated tests
-  12. /execute-tc   → Execute tests via Chrome MCP
+  12. /execute-tc   → Execute a test cycle (Claude runs it, or prepares it for a person)
   13. /bug-report or /report-bugs → Report defects to your issue tracker
   14. /learn        → Document any new rules/insights
   15. /sync-global   → Sync learnings to global folder (auto or manual)
