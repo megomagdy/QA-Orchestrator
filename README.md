@@ -1,6 +1,6 @@
 # QA-Orchestrator — Portable QA Infrastructure for Claude Code
 
-A tool-agnostic, shareable "global QA folder": **37 skills**, **10 agents**, templates, and scripts that give [Claude Code](https://claude.com/claude-code) a complete, opinionated QA methodology — investigation, gap analysis, test case design, automation, execution, and bug reporting.
+A tool-agnostic, shareable "global QA folder": **39 skills**, **10 agents**, templates, and scripts that give [Claude Code](https://claude.com/claude-code) a complete, opinionated QA methodology — investigation, gap analysis, test case design, automation, execution, and bug reporting.
 
 **Nothing here is tied to a specific company or vendor.** Your issue tracker (Jira, Azure DevOps, Linear, GitHub Issues, …), test management tool (Qmetry, TestRail, Zephyr, Xray, …), docs platform (Notion, Confluence, SharePoint, …), and design tool are all configured **once per user** via `/init-workspace`.
 
@@ -118,10 +118,13 @@ flowchart TD
 QA-Global/
 │
 ├── 📄 README.md                    ← you are here
+├── 📄 LINK-VS-COPY.md              ← why skills/agents are linked, not copied
+├── 📄 EXECUTION_PLAN.md            ← token-efficient test case execution plan (Claude Code + Codex)
 ├── ⚙️ workspace.config.json        ← YOUR tools (created by /init-workspace — not shipped)
 ├── ⚙️ workspace.config.example.json ← blank template the wizard starts from (shipped)
+├── 📁 .upload-zips/                ← built by scripts/build-upload-zips.js (git-ignored)
 │
-├── 📁 skills/                      ← 37 skills (each = <name>/SKILL.md)
+├── 📁 skills/                      ← 39 skills (each = <name>/SKILL.md)
 │   │
 │   │   WORKFLOW COMMANDS (19) — the /commands of the journey:
 │   ├── init-workspace/  init-project/  save-url/
@@ -131,7 +134,8 @@ QA-Global/
 │   ├── execute-tc/  verify-fix/  bug-report/  report-bugs/
 │   ├── learn/  sync-global/  checkpoint/  session-resume/
 │   │
-│   │   TECHNIQUE REFERENCES (19) — methodology & framework knowledge:
+│   │   TECHNIQUE REFERENCES (20) — methodology & framework knowledge:
+│   ├── qa-dom-audit/  enforcement-tc-gen/  module-areas-manager/  tc-writer/
 │   ├── unified-qa/  test-plan-generation/
 │   ├── playwright-e2e-testing/  playwright-enhanced/  playwright-api-testing/
 │   ├── form-validation-breaker/  auth-bypass-tester/  owasp-security-testing/
@@ -157,14 +161,20 @@ QA-Global/
 ├── 📁 scripts/
 │   ├── report-bugs.js              ← tracker-agnostic zero-token bug reporter
 │   ├── report-bugs-README.txt      ← script command reference
-│   ├── .env.example                ← credential template (copy to .env — NEVER commit .env)
+│   ├── tc-prevention-gates.js      ← defect-prevention gates for TC generators (write-tests)
+│   ├── build-upload-zips.js        ← zips every skill for Settings → Skills upload
+│   ├── .env.example                ← credential template (copy to ~/.qa-global/.env, never into this folder)
 │   └── adapters/
-│       └── _template.js            ← adapter contract: copy → implement → done
+│       ├── _template.js            ← adapter contract: copy → implement → done
+│       ├── jira.js                 ← ready-made Jira Cloud adapter
+│       └── azure-devops.js         ← ready-made Azure DevOps adapter
 │
-└── 📁 reference/                   ← human-readable deep documentation
-    ├── QA-Commands-Reference.txt   ← every command explained
-    ├── QA-Agents-Reference.txt     ← every agent explained
-    └── QA-Folder-Structure-Reference.txt ← global ↔ project file flow
+├── 📁 reference/                   ← human-readable deep documentation
+│   ├── QA-Commands-Reference.txt   ← every command explained
+│   ├── QA-Agents-Reference.txt     ← every agent explained
+│   └── QA-Folder-Structure-Reference.txt ← global ↔ project file flow
+│
+└── 📁 docs/diagrams/               ← journey, file-flow, agent and bug-workflow diagrams (PNG + HTML source)
 ```
 
 And how files flow between the **global folder** (the single source of truth) and each **project folder**.
@@ -220,7 +230,7 @@ flowchart LR
 | `/checkpoint` | Anytime | Saves full session context to a file before you step away |
 | `/session-resume` | Anytime | Restores a checkpoint and continues where you left off |
 
-### Technique references (19)
+### Technique references (20)
 
 | Skill | Knowledge it carries |
 |---|---|
@@ -243,6 +253,7 @@ flowchart LR
 | `qa-dom-audit` | Live DOM verification of buttons/menus/actions against a spec — catches ghost UI elements |
 | `enforcement-tc-gen` | Role x module x action micro TCs for RBAC/permission enforcement (.docx + .md) |
 | `module-areas-manager` | Maintains the module-areas config mapping modules to UI areas, actions, and selectors |
+| `tc-writer` | Inline form of the tc-writer agent (SFDP + coverage matrix) for environments without subagents, e.g. Cowork or claude.ai |
 
 ---
 
@@ -329,5 +340,6 @@ Claude does the **intelligence** (polished summaries, full reproduction steps, p
 - **Config over hardcoding** — tool names, URLs, IDs, and people live in `workspace.config.json` (per user) and per-project configs, never inside skills.
 - **Intelligence vs execution split** — Claude does the thinking (parsing, mapping, writing); plain scripts do the API calls (zero tokens).
 - **Learn and sync back** — `/learn` captures lessons per project; `/sync-global` generalizes them into the shared templates so every future project starts smarter.
+- **Neutral examples, adapt to your stack** — examples use generic entities (orders, invoices, `PROJ-1234`) and name a tool only as a labelled example. Code samples note what to swap: test framework, browser engines, locale and translated labels, CI notifier, scanner. Company- or domain-specific lessons stay in your own workspace, not in this folder.
 - **Tool-specific knowledge is labeled** — lessons that only apply to one tool are tagged (e.g., "Tool-specific example: Notion") with the transferable rule stated alongside.
 - **Confirm, don't assume** — skills mandate DOM audits before UI test cases, premise validation before questions, and re-investigation after product answers.
