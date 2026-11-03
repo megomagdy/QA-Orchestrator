@@ -223,7 +223,7 @@ flowchart LR
 | `/cross-validate` | Design | Audits generated TCs against QC decisions, docs, and live DOM; catches contradictions and ghost elements |
 | `/scaffold-automation` | Automate | Builds a Playwright framework: POM, fixtures, multi-env config, security/a11y/API specs, CI pipeline |
 | `/run-automation` | Automate | Runs the suite, categorizes failures, spawns healer for broken tests |
-| `/execute-tc` | Execute | Executes TCs via any browser-automation tool with popup recovery; logs confirmed bugs + evidence into `Manual Execution/` |
+| `/execute-tc` | Execute | Runs a test cycle through any UI-automation tool, or prepares verified cases for a person to run; candidates for your ruling, confirmed bugs queued where the project files say |
 | `/verify-fix` | Retest | Retests every In Testing bug of a story and explores what each fix could have broken around it (per-bug regression charter); one retest record per run; closes / returns tickets only on your go-ahead |
 | `/bug-report` | Report | Writes one polished, tracker-ready bug report; queues it in `Bug Summaries.txt` |
 | `/report-bugs` | Report | Batch-reports `Bug Summaries.txt` via the zero-token script; auto-discovers and attaches evidence files |
