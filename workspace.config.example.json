@@ -1,0 +1,27 @@
+{
+  "_readme": "Template for workspace.config.json. /init-workspace fills in a copy for your company; the real file is git-ignored and never shared. Credentials do NOT go here: put them in ~/.qa-global/.env (or the file named by QA_SECRETS_FILE).",
+
+  "qaLead": "<name, title>",
+  "organization": "<company>",
+
+  "issueTracker": "<Jira | Azure DevOps | Linear | GitHub Issues | other>",
+  "issueTrackerOptions": {
+    "siteUrl": "<https://your-site.example.com>",
+    "defaultProjectKey": "<PROJ>",
+    "notes": "<tracker-specific rules, e.g. which issue type is a sub-task>"
+  },
+  "issueTrackerMcp": false,
+
+  "testTool": "<Qmetry | TestRail | Zephyr | Xray | Azure Test Plans | spreadsheet-only | other>",
+  "testToolTemplate": "<templates/your-import-template.xlsx, or null>",
+  "testToolTemplateNotes": "<sheet name, column quirks, date format>",
+
+  "docsPlatform": "<Notion | Confluence | SharePoint | Google Docs | wiki | other>",
+  "questionsPlatform": "<where open questions live>",
+
+  "designTool": "<Figma | Sketch | Adobe XD | other>",
+
+  "localization": "<e.g. English only, or the product's languages incl. any right-to-left one>",
+
+  "createdAt": "<ISO date>"
+}

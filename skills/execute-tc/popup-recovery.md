@@ -1,10 +1,10 @@
-# 5-Step Popup Recovery for Chrome MCP
+# 5-Step Popup Recovery (any browser-automation tool)
 
-When a popup, modal, or Angular Material dialog blocks execution:
+When a popup, modal or framework dialog (Angular Material, MUI, Bootstrap, native `<dialog>`, …) blocks execution:
 
 ## Step 1: Try clicking the backdrop/overlay
 ```
-Click the element behind the dialog (mat-dialog-container backdrop, cdk-overlay-backdrop)
+Click the backdrop / overlay behind the dialog (e.g. `.cdk-overlay-backdrop`, `.MuiBackdrop-root`, `.modal-backdrop`, `::backdrop`)
 ```
 
 ## Step 2: Try pressing Escape
@@ -14,7 +14,7 @@ Press Escape key to dismiss the dialog
 
 ## Step 3: Try clicking a close/cancel button
 ```
-Look for: X button, Cancel button, Close button, mat-icon[close]
+Look for: X button, Cancel button, Close button, an icon button labelled "close" (`aria-label`)
 ```
 
 ## Step 4: Try navigating away
@@ -28,7 +28,7 @@ Full page refresh (F5 / Ctrl+R), then re-navigate to the target screen
 ```
 
 ## When to Use
-- Angular Material dialogs that appear unexpectedly
+- Framework dialogs that appear unexpectedly
 - Cookie consent banners
 - Session timeout warnings
 - Tour/onboarding overlays

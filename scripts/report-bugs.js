@@ -28,9 +28,10 @@
  *   - Final confirmation — Y to create, n/skip to skip
  *
  * Setup:
- *   1. Create .env in this script's folder (or project folder) with the
- *      credentials your adapter requires (see adapters/_template.js and
- *      .env.example).
+ *   1. Create a .env with the credentials your adapter requires (see
+ *      adapters/_template.js and .env.example) in your per-user folder
+ *      ~/.qa-global/.env (or the project folder, or the file named by
+ *      QA_SECRETS_FILE). Never inside the global QA folder.
  *
  *   2. Create bug-reporter.config.json in your project folder (or run --init)
  *
@@ -56,12 +57,18 @@ const OVERRIDES_FILE = path.join(PROJECT_DIR, "bug-overrides.json");
 const DESCRIPTIONS_FILE = path.join(PROJECT_DIR, "bug-descriptions.json");
 
 // .env lookup: the folder the script runs from (Manual Execution/), then its
-// parent (the project root), then the script's own folder
+// parent (the project root), then $QA_SECRETS_FILE, then the per-user file
+// ~/.qa-global/.env. Credentials never live inside the portable folder; the
+// script's own folder is checked last only for older setups, with a warning.
+const USER_ENV_FILE = path.join(require("os").homedir(), ".qa-global", ".env");
+const LEGACY_ENV_FILE = path.join(SCRIPT_DIR, ".env");
 const ENV_FILE = [
   path.join(PROJECT_DIR, ".env"),
   path.join(path.dirname(PROJECT_DIR), ".env"),
-  path.join(SCRIPT_DIR, ".env"),
-].find((p) => fs.existsSync(p)) || path.join(SCRIPT_DIR, ".env");
+  process.env.QA_SECRETS_FILE,
+  USER_ENV_FILE,
+  LEGACY_ENV_FILE,
+].find((p) => p && fs.existsSync(p)) || USER_ENV_FILE;
 
 // ─── Init command ────────────────────────────────────────────────────────────
 
@@ -102,7 +109,7 @@ function initConfig() {
     bugFile: "Bug Summaries.txt",
     sprintId: null,
     modulePath: "",
-    _modulePath_readme: "Navigation path used in generated descriptions, e.g. 'HR > Payroll'.",
+    _modulePath_readme: "Navigation path used in generated descriptions, e.g. 'Billing > Invoices'.",
     environmentName: "Staging",
   };
 
@@ -175,6 +182,10 @@ function loadAdapter(config) {
 // ─── Load .env ───────────────────────────────────────────────────────────────
 
 function loadEnv(adapter) {
+  if (ENV_FILE === LEGACY_ENV_FILE && fs.existsSync(ENV_FILE)) {
+    console.warn(`WARNING: credentials found inside the global QA folder (${LEGACY_ENV_FILE}).`);
+    console.warn(`Move them to ${USER_ENV_FILE} (or set QA_SECRETS_FILE) so they are not copied with the folder.`);
+  }
   if (fs.existsSync(ENV_FILE)) {
     const lines = fs.readFileSync(ENV_FILE, "utf-8").split("\n");
     for (const line of lines) {
@@ -193,7 +204,8 @@ function loadEnv(adapter) {
   const missing = required.filter((k) => !process.env[k]);
   if (missing.length > 0) {
     console.error(`ERROR: Missing credentials for adapter "${adapter.name || "unknown"}": ${missing.join(", ")}`);
-    console.error(`Add them to a .env file in the folder you run from, the project root, or: ${SCRIPT_DIR}`);
+    console.error(`Add them to a .env file in the folder you run from, the project root, or your per-user file: ${USER_ENV_FILE}`);
+    console.error(`(or point QA_SECRETS_FILE at another file outside the global QA folder).`);
     console.error(`See .env.example next to this script.`);
     process.exit(1);
   }

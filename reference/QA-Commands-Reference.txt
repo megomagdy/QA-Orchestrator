@@ -221,8 +221,8 @@ REFERENCE & LEARNING
   Syncs ALL generalized learnings from the current project back to
   the global QA folder. Updates everything: playbook template,
   condensed rules, command files, agent files, and support sections.
-  Generalizes project-specific content (replaces "Loans" → {MODULE},
-  "IS-5074" → {STORY_KEY}, etc.) so learnings benefit all future
+  Generalizes project-specific content (replaces "Invoices" → {MODULE},
+  "PROJ-1234" → {STORY_KEY}, etc.) so learnings benefit all future
   projects. For commands and agents, shows diffs before overwriting.
   Reads the global folder path from CLAUDE.md's "Global QA Folder"
   section (set by /init-project). Can also run automatically after

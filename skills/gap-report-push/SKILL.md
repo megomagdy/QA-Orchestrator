@@ -38,6 +38,8 @@ node <skill-dir>/scripts/push-inventory.js plan <project>/review-findings.md --d
 - Check every automatic mapping marked "check it really resolves it"; override wrong ones in the decisions file (e.g. a question that only says a part "became CF-20").
 - Show the user the script's output (counts, entries, mappings, exclusions) as the inventory. Keep `push-decisions.json` and `push-plan.json` in the project as the record of the push scope.
 - A companion page (HTML summary, slide) the script doesn't read: compare its counts by hand with the plan and add any extra item to the decisions file.
+- A conflict whose row contains `**Resolved by D-xx:**` (the `/review` convention) is treated as closed and left out. Older reports mark resolution as `[Resolved` in the conflict cell, which still works.
+- Items outside the tables (decisions, answered items, developer notes) are invisible to the script. Say in the inventory what happens to each: decisions and answered items are not pushed; a developer note about today's behaviour that affects users, money or downstream data must already be a question (keep-or-change) — if one is not, stop and raise it before pushing.
 **Why:** a push of "the open questions" silently dropped a conflict with no matching question, 3 findings and 19 design divergences that the report and its HTML summary listed; the user found the gap by comparing counts.
 
 ## Step 1: Determine Target Database/Page
@@ -46,6 +48,8 @@ node <skill-dir>/scripts/push-inventory.js plan <project>/review-findings.md --d
 Check `project-references.md` for an existing Open Questions database/page for this feature.
 - If found → confirm with user
 - If NOT found → ask: "Create NEW or use EXISTING? (provide URL)"
+- **Visibility (ask with the location):** should the tracker be **private to the user** for now, or **shared** with the page's audience? A database created under a shared page inherits that page's sharing. For a private tracker, create it at workspace level (Notion: parent omitted or moved to `workspace`), or move it there right after creation. Re-fetch it and check its ancestor path is empty. Remind the user to check **Share** for people added directly, since the connector cannot read page permissions.
+  **Why:** on one feature, a tracker was created under the shared engineering hand-off at the user's choice, then the user wanted both lists private; they had to be moved out after creation.
 - **Write access:** a connector can usually read a page it can't edit. If creating under the chosen parent fails with a permission error, stop and ask: create it as a private page the user moves later, have the user grant the integration edit access (e.g. Notion: Share → Connections) and retry, or use another parent. Never work around the permission through another session or tool.
 
 ## Step 2: Create or Validate Schema
@@ -56,6 +60,7 @@ Question (title), Question ID (text), Epic (select), Priority (select: CRITICAL/
 Follow-up (title — the full follow-up question), Follow-up ID (text: `<Question ID>-F<n>`, e.g. `Q-29-F1`), Question (two-way relation to the tracker → creates the tracker's "Follow-ups" column), Priority (same options as the tracker; default = the question's), Status (select: Open / Answered / Closed — Answered = stakeholder replied, Closed = QA confirmed it settles it), Answer (text), Asked on (date), Answered on (date), Raised by (select: QA / Product / Dev)
 
 **Default sort:** both lists open sorted by **Priority ascending** (option order CRITICAL → LOW), then by ID. Order the Priority options CRITICAL, HIGH, MEDIUM, LOW so the select order is the severity order. Show the Follow-ups column in the tracker's default view.
+- Notion: a two-way **self**-relation creates two columns (the relation and its reverse, auto-named e.g. "Related questions 1"). Rename the reverse one right away (e.g. "Related from") so stakeholders don't fill both.
 - Notion: put several sort keys in ONE clause (`SORT BY "Priority" ASC, "Follow-up ID" ASC`); separate `SORT BY` statements replace each other. Re-fetch the view and check its `sorts`.
 - Notion: a formula over a relation with a select comparison (`prop("Follow-ups").filter(current.prop("Status") != "Closed").length()`) is rejected with "Type error with formula" — don't block on a count column; the relation column itself shows the follow-ups.
 
@@ -88,7 +93,7 @@ Query the tracker back (not the create responses): count entries per priority an
 node <skill-dir>/scripts/push-inventory.js verify <project>/push-plan.json <tracker-ids.txt>
 ```
 Exit 1 lists entries MISSING from the tracker, entries NOT in the plan, and DUPLICATES — fix them and verify again; never report a push as done before exit 0. Then report to the user: pushed N (per priority), mapped conflicts/findings and to which question, excluded items with reasons. Save the URL (and the entry count) in `project-references.md`.
-**Why:** replaying the Leave Policies V2 first push (26 entries) through `verify` fails with "MISSING from tracker: CF-07, DESIGN" — the exact gap the user had to find by hand.
+**Why:** replaying a past feature's first push (26 entries) through `verify` fails with "MISSING from tracker: CF-07, DESIGN" — the exact gap the user had to find by hand.
 
 ## Step 5: Hand-off and Answer Tracking (offer, don't assume)
 - Offer a ready-to-paste message for the stakeholders: the tracker URL, the counts, that every row is a page with Context / Example / Why it matters, where to write the answer, and the HIGH items listed by title. Remind the user to share the tracker first if it is private.

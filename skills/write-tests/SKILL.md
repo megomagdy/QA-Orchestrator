@@ -21,7 +21,7 @@ If ANY is missing, STOP and inform the user.
 
 **Design exports:** If your design tool's exports (Figma, Sketch, Adobe XD, Zeplin, screenshots, ...) are images too large to read reliably (e.g. >1800px in any dimension), resize them to ≤1800px FIRST before reading — oversized exports lose text and element detail. Save resized versions in a `resized/` subfolder.
 
-**Test Tool Template:** If a test-management import template (e.g., `test-import-template.xlsx`, `qmetry-template.xlsx`, or whatever `/init-workspace` registered) exists in the project root, read it FIRST and match its exact column order, headers, and multi-row pattern.
+**Test Tool Template:** If a test-management import template (e.g., `test-import-template.xlsx` / `.csv`, or whatever `/init-workspace` registered) exists in the project root, read it FIRST and match its exact column order, headers, and multi-row pattern.
 
 ## TC Design Process
 
@@ -34,12 +34,12 @@ For each story, decompose into: **S**tates, **F**ields, **D**ata interactions, *
 ### Step 2a: Requirement Clause Inventory — no missed cases by design (MANDATORY, before writing any case)
 Missed cases happen when writers are given **areas** ("the admin panel") instead of **requirements**. Before any case is written, break every source into atomic testable clauses and write `traceability-matrix.md`:
 - every PRD / story bullet, every table row (status tables, error-code tables, permission-matrix rows, "when X happens" lists), every state-matrix cell (state × screen × persona), every UI copy string;
-- every design-only element seen in the rendered frames (Figma states, helper texts, tooltips, empty states);
+- every design-only element seen in the rendered frames (design states, helper texts, tooltips, empty states);
 - implied cross-cutting areas: permissions for every role on every new control, API-level enforcement of every write, concurrency / two tabs, session expiry, empty or missing data, long values, date / time / timezone formats, regression of existing behaviour the feature touches, downstream consumers of changed data;
 - every product decision (QC-ID) and every assumption;
 - **when the feature replaces or changes existing behaviour and the code is available: every branch of the current implementation** (each `if` / guard / refusal / fallback in the code being replaced). Branches no document states are still behaviour users rely on today, and each becomes a clause (covered, or explicitly superseded).
 
-Columns: `C-ID | Clause | Source (§ / QC / Figma frame / code branch / implied) | B-ID(s) | Case ID(s) | Status`. Status is **covered**, **out of scope (cite the Out-of-Scope list)**, **deferred (reason)** or **superseded (by <decision>)** for a clause a later decision replaced (name the decision; the replacing decision's own clause carries the case). "Not covered" is not an allowed status. A spec-silent clause is covered on a stated reasonable assumption (tag + `REVISIT:`).
+Columns: `C-ID | Clause | Source (§ / QC / design frame / code branch / implied) | B-ID(s) | Case ID(s) | Status`. Status is **covered**, **out of scope (cite the Out-of-Scope list)**, **deferred (reason)** or **superseded (by <decision>)** for a clause a later decision replaced (name the decision; the replacing decision's own clause carries the case). "Not covered" is not an allowed status. A spec-silent clause is covered on a stated reasonable assumption (tag + `REVISIT:`).
 
 Each clause maps to a behaviour (Step 2b), and each behaviour to exactly one case. So the chain **clause → behaviour → case** is complete before writing starts, and it's what the agents receive.
 
@@ -113,7 +113,7 @@ Fail the build on the six gates in [defect-prevention.md](defect-prevention.md#g
 
 ## Output — Two Files
 ### File 1: Markdown — Readable tables grouped by epic/story.
-### File 2: Excel — See [excel-output.md](excel-output.md) for the import format rules (worked example: 25-column Qmetry format; adapt to your tool's template).
+### File 2: Test-tool import file (spreadsheet or CSV, per your tool) — See [excel-output.md](excel-output.md) for the import format rules (worked example: a 25-column template; adapt to your tool's real template).
 
 ## Rules
 - NEVER write TCs for unconfirmed UI elements (check design files/DOM first)

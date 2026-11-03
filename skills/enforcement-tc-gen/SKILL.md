@@ -1,7 +1,7 @@
 ---
 name: enforcement-tc-gen
 description: |
-  **Permission Enforcement Test Case Generator**: Generates role×module×action micro test cases for RBAC/permission enforcement testing. Creates .docx and .md deliverables with TC IDs, steps, expected results, and priority levels. Use this skill whenever: generating permission test cases, creating RBAC enforcement tests, building role-based access control test suites, producing test matrices for roles×modules×actions, generating micro TCs for permission validation, or creating test case documents for multi-tenant ERP systems.
+  **Permission Enforcement Test Case Generator**: Generates role×module×action micro test cases for RBAC/permission enforcement testing. Creates Markdown plus the team's document or spreadsheet format (e.g. Word, Excel) with TC IDs, steps, expected results, and priority levels. Use this skill whenever: generating permission test cases, creating RBAC enforcement tests, building role-based access control test suites, producing test matrices for roles×modules×actions, generating micro TCs for permission validation, or creating test case documents for multi-module, multi-role applications.
   - MANDATORY TRIGGERS: enforcement test cases, permission tests, RBAC tests, role permission matrix, micro TCs, role enforcement, access control tests, permission test generation, roles permissions test cases
 ---
 
@@ -52,11 +52,11 @@ Each module needs:
 ```typescript
 {
   index: number,           // 0-based module index
-  moduleKey: string,       // e.g., 'settlements'
-  modulePath: string,      // e.g., '/app/settlements'
-  moduleTitle: string,     // e.g., 'Attendance & Settlements'
+  moduleKey: string,       // e.g., 'orders'
+  modulePath: string,      // e.g., '/app/orders'
+  moduleTitle: string,     // e.g., 'Sales & Orders'
   areas: [{
-    name: string,          // e.g., 'Settlements'
+    name: string,          // e.g., 'Orders'
     actions: ActionType[], // ['View', 'Add', 'Edit', 'Delete']
     selectors: { ... }     // CSS selectors for each action
   }]
@@ -72,7 +72,7 @@ A boolean array per role, one entry per module:
 {
   // one boolean per module, in the same order as the module-areas config
   admin:    [true,  true,  true,  ...],   // M booleans
-  employee: [true,  false, true,  ...],   // true = has access
+  member:   [true,  false, true,  ...],   // true = has access
 }
 ```
 
@@ -81,9 +81,9 @@ A boolean array per role, one entry per module:
 For partial access scenarios:
 ```typescript
 {
-  roleKey: 'employee',
+  roleKey: 'member',
   moduleKey: 'records',
-  areaName: 'Leave Balance',
+  areaName: 'Credit Balance',
   action: 'Add',
   expected: 'DENIED'  // Despite having module access
 }
@@ -91,15 +91,15 @@ For partial access scenarios:
 
 ## Output Formats
 
-### DOCX Output
+### Document Output (example: Word .docx)
 
-Professional landscape A4 document with:
+Use whatever document or spreadsheet format the team works in. A professional landscape A4 document has:
 - **Title page**: Document name, total TC count, generation date
 - **Summary table**: TC count per role
 - **Per-role sections**: Each role gets a heading + table with columns:
   - TC ID | Module | Area | Action | Priority | Test Steps | Expected Result | Status
 
-Uses the `docx` npm package. Column widths optimized for landscape:
+Example implementation with the `docx` npm package. Column widths optimized for landscape:
 ```javascript
 const colWidths = [1100, 1200, 1400, 700, 600, 4000, 4600, 798];
 ```
@@ -110,7 +110,7 @@ Simpler table format for quick reference:
 ```markdown
 | TC ID | Module | Area | Action | Expected | Pri |
 |-------|--------|------|--------|----------|-----|
-| TC-ENF-0001 | Home | Employees Widget | View | PERMITTED | P0 |
+| TC-ENF-0001 | Home | Team Widget | View | PERMITTED | P0 |
 ```
 
 ## Generator Script Pattern
@@ -137,7 +137,7 @@ Each area includes:
 
 Steps should be concrete and reference actual UI elements:
 ```
-✓ "Click 'Add Shifts' button"
+✓ "Click 'Add Order' button"
 ✓ "Verify eye icon in Actions column opens detail view"
 ✓ "Verify Filter button is functional"
 
@@ -156,10 +156,11 @@ For modules a role can't access, generate a single TC that checks:
 ## Running the Generator
 
 ```bash
-# Install docx package if needed
+# Example: Node generators (one per output format the project uses)
+# Install the document library if needed, e.g.
 npm install docx
 
-# Generate DOCX
+# Generate the document
 node gen_micro_tcs.js
 
 # Generate Markdown
@@ -178,7 +179,7 @@ When the app UI changes:
 
 ## Reference Scale (anonymized case study)
 
-A real run on an enterprise ERP platform, useful for sanity-checking your own counts:
+A real run on a large multi-module business application, useful for sanity-checking your own counts:
 
 - 8 roles × 23 modules
 - 101 DOM-verified actions across all module areas

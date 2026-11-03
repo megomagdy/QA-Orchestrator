@@ -65,11 +65,11 @@ After this, `/init-workspace`, `/init-project`, and all other commands are avail
    - Follow-up: "Do you have a real import template file (.xlsx/.csv) from your tool? Provide its path — it will be copied into the global folder's templates/ so /write-tests can match it exactly." → `testToolTemplate` (relative path under templates/, or null)
 5. **Where do PRDs and open questions live?** → `docsPlatform` and `questionsPlatform` (Notion, Confluence, SharePoint, Google Docs, wiki, other)
 6. **Design tool?** → `designTool` (Figma, Sketch, Adobe XD, other)
-7. **Default localization requirement?** → `localization` (e.g., "Arabic + English, RTL", "English only", "per-project")
+7. **Default localization requirement?** → `localization` (e.g., "English only", "two languages incl. a right-to-left one", "per-project")
 
 ## Step 3: Write workspace.config.json
 
-Write to the global folder root:
+Start from `workspace.config.example.json` (the shipped blank template) and write the filled copy to the global folder root as `workspace.config.json` (git-ignored, never shared):
 
 ```json
 {
@@ -96,7 +96,7 @@ If the team wants zero-token bug reporting via `/report-bugs`:
 
 1. Check `scripts/adapters/` for an adapter matching `issueTracker`.
 2. If none exists, offer to create one now: copy `scripts/adapters/_template.js` to `scripts/adapters/<tracker>.js` and implement `createIssue()` together with the user (they provide API docs and auth method). The contract is documented in the template.
-3. Copy `scripts/.env.example` to `scripts/.env` and tell the user to fill in the credentials the adapter requires. **Remind them: `.env` must never be shared or committed.**
+3. Copy `scripts/.env.example` to the per-user file `~/.qa-global/.env` (or a path the user names, exported as `QA_SECRETS_FILE`) and tell the user to fill in the credentials the adapter requires. **Never put credentials inside the global folder**: it is copied between machines and people. Remind them: `.env` must never be shared or committed.
 
 ## Step 5: Confirm
 
@@ -116,7 +116,7 @@ If a fallback copy was used instead of a link, say so explicitly and warn that t
 
 ## Rules
 
-- **The global folder is the single source of truth for skills, agents, and rules. LINK, never copy.** Copies are snapshots that silently run stale versions. Only credentials (`.env`) and tool templates are genuinely per-user files.
+- **The global folder is the single source of truth for skills, agents, and rules. LINK, never copy.** Copies are snapshots that silently run stale versions. Only credentials (`~/.qa-global/.env`, outside the global folder), `workspace.config.json` and tool templates are genuinely per-user or per-company files.
 - If a local skills/agents directory already exists, **promote any local-only content INTO the global folder before linking** — never discard it, and back the directory up rather than deleting it.
 - NEVER store credentials in workspace.config.json — credentials go ONLY in `.env` files
 - NEVER guess tool URLs or IDs — ask

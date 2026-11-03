@@ -30,7 +30,7 @@ A tool-agnostic, shareable "global QA folder": **37 skills**, **10 agents**, tem
    - **LINK all skills and agents user-level** (`~/.claude/skills/`, `~/.claude/agents/` → this folder, via junction/symlink) — after this, every `/command` works in any folder on your machine, and editing this folder updates them everywhere with nothing to re-run. See **[LINK-VS-COPY.md](LINK-VS-COPY.md)** for why links (not copies) are used for shared files.
    - Set the `QA_GLOBAL_HOME` environment variable to this folder's path
    - Ask which tools your team uses and write `workspace.config.json`
-   - Optionally set up a bug-reporter tracker adapter + credentials (`scripts/.env`)
+   - Optionally set up a bug-reporter tracker adapter + credentials (in `~/.qa-global/.env`, outside this folder)
 3. **Per project:** open Claude Code in your project folder and run **`/init-project <name>`** (available everywhere after step 2).
 4. Work the journey below.
 
@@ -119,6 +119,7 @@ QA-Global/
 │
 ├── 📄 README.md                    ← you are here
 ├── ⚙️ workspace.config.json        ← YOUR tools (created by /init-workspace — not shipped)
+├── ⚙️ workspace.config.example.json ← blank template the wizard starts from (shipped)
 │
 ├── 📁 skills/                      ← 37 skills (each = <name>/SKILL.md)
 │   │
@@ -310,13 +311,13 @@ Claude does the **intelligence** (polished summaries, full reproduction steps, p
 1. Copy `scripts/adapters/_template.js` → `scripts/adapters/<your-tracker>.js`
 2. Implement `createIssue()` per the contract documented in the template (Claude can write it with you — provide your tracker's API docs and auth method). Optionally implement `addAttachments()` for automatic evidence upload — without it, the script lists files per issue for manual drag-and-drop.
 3. Set `"tracker": "<your-tracker>"` in the project's `bug-reporter.config.json`
-4. Copy `scripts/.env.example` → `scripts/.env` and fill in the credentials your adapter requires
+4. Copy `scripts/.env.example` → `~/.qa-global/.env` (or set `QA_SECRETS_FILE` to another file outside this folder) and fill in the credentials your adapter requires
 
 ---
 
 ## Sharing & Security
 
-- **NEVER commit `scripts/.env`** (credentials). Only `.env.example` ships — and the included `.gitignore` enforces this.
+- **NEVER keep credentials inside this folder.** It is meant to be copied to other machines and people; keep them in `~/.qa-global/.env`. Only `.env.example` ships, and `.gitignore` still blocks any stray `.env`.
 - `workspace.config.json` is per-user (also git-ignored) — each engineer runs `/init-workspace` to create their own.
 - The shipped `templates/qmetry-template.xlsx` contains only sanitized sample data.
 - Project folders created by `/init-project` are your own working copies — they live outside this repo.
