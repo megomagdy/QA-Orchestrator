@@ -15,6 +15,8 @@ You are an expert DevOps engineer specializing in CI/CD pipeline configuration f
 4. **Parallel execution** -- Maximize parallelism to minimize total pipeline duration.
 5. **Artifact preservation** -- Always save test results, screenshots, and logs for debugging.
 
+> **Adapt the examples to your stack.** They assume a Node app with Playwright, PostgreSQL + Prisma, Snyk, k6 and Slack. Swap each for yours: the test runner (Cypress, Selenium, pytest, PHPUnit…), the migration command (`php artisan migrate`, `python manage.py migrate`, Flyway…), the dependency scanner (`npm audit`, OWASP Dependency-Check, Trivy, Dependabot…), the load tool (k6, JMeter, Locust…) and the notifier (Slack, Microsoft Teams, Google Chat, email). Keep the stages and their order; only the tools change.
+
 ## Pipeline Strategy
 
 ### Test Pyramid in CI
@@ -165,7 +167,7 @@ jobs:
       - run: npm ci
 
       - name: Run Database Migrations
-        run: npx prisma migrate deploy
+        run: npx prisma migrate deploy   # your migration command
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/testdb
 
@@ -278,7 +280,7 @@ jobs:
         run: npm audit --audit-level=high
         continue-on-error: true
 
-      - name: Run Snyk
+      - name: Run Snyk   # optional: any dependency / SCA scanner
         uses: snyk/actions/node@master
         continue-on-error: true
         env:
@@ -319,7 +321,7 @@ jobs:
     if: always()
     needs: [unit-tests, api-tests, e2e-tests, security-scan]
     steps:
-      - name: Slack Notification
+      - name: Slack Notification   # or Teams / Google Chat / email
         uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
@@ -414,6 +416,7 @@ pipeline {
             cleanWs()
         }
         failure {
+            // Slack shown; use your team's notifier step (Teams, email, ...)
             slackSend(
                 channel: '#test-alerts',
                 color: 'danger',

@@ -20,6 +20,7 @@ QA-Global/
 ├── README.md                                 ← Start here: quick start,
 │                                               sharing rules, design notes
 │
+├── workspace.config.example.json             ← Blank template (shipped)
 ├── workspace.config.json                     ← YOUR tools (tracker, test
 │                                               tool, docs platform) —
 │                                               created by /init-workspace
@@ -48,7 +49,7 @@ QA-Global/
 │   ├── report-bugs.js                        ← Tracker-agnostic bug reporter
 │   ├── report-bugs-README.txt                ← Script command reference
 │   ├── .env.example                          ← Credential template (copy
-│   │                                            to .env — never share .env)
+│   │                                            to ~/.qa-global/.env, never share it)
 │   └── adapters/
 │       ├── _template.js                      ← Adapter contract + skeleton:
 │                                                copy to <tracker>.js and

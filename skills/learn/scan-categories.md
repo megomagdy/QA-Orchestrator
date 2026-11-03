@@ -13,7 +13,7 @@
 | **App behavior discoveries** | Live app behaved differently than expected |
 | **API contract discoveries** | Field naming, response nesting, validation rules, payload requirements |
 | **Auth/session patterns** | Login flow, OTP handling, token storage, mid-run auth refresh |
-| **Tool quirks** | Issue tracker API issues, Playwright strict mode, Chrome MCP limitations |
+| **Tool quirks** | Issue tracker API issues, test-framework strictness rules, browser-automation tool limitations |
 | **User corrections** | User corrected Claude's assumption or approach |
 | **Process improvements** | Workflow changes agreed during session |
 | **Bug patterns found** | Bugs discovered by automation not in manual bug list |

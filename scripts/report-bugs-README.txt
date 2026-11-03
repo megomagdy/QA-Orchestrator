@@ -50,14 +50,15 @@
   1. Copy scripts/adapters/_template.js → scripts/adapters/<name>.js
   2. Implement createIssue() per the contract in the template
   3. Set "tracker": "<name>" in bug-reporter.config.json
-  4. Put the adapter's credentials in .env (see .env.example)
+  4. Put the adapter's credentials in ~/.qa-global/.env (see .env.example),
+     or in a file named by QA_SECRETS_FILE. Never inside the global QA folder.
 
 ============================================================
 
   REQUIRED FILES (in project's Manual Execution/ folder):
   - bug-reporter.config.json   → Project config (tracker, assignees, parents)
   - Bug Summaries.txt          → Bug list organized by epic
-  - .env                       → Tracker credentials (or in script folder)
+  - .env                       → Tracker credentials (or ~/.qa-global/.env)
 
   EVIDENCE FILES (attachments — same folder, auto-discovered):
   - Epic {n}/Bug {m}.png       → screenshot for Epic n / Bug m

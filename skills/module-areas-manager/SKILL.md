@@ -114,7 +114,7 @@ When the config changes, whatever consumes it must be regenerated. Typical chain
 | Consumer | What to update |
 |------|---------------|
 | Micro-TC generator script(s) | Module data array (actions, steps, expected results) |
-| Generated documents (.docx / .md / .xlsx) | Regenerate by re-running the generator |
+| Generated documents (in whatever formats the project uses, e.g. .md / .docx / .xlsx) | Regenerate by re-running the generator |
 | Automated enforcement specs | Re-run to confirm selectors still resolve |
 
 Record the actual generator commands in the project's CLAUDE.md — they differ per project.

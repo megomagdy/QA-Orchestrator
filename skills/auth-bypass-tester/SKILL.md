@@ -760,6 +760,9 @@ test.describe('Insecure Direct Object Reference (IDOR)', () => {
 import { test, expect } from '@playwright/test';
 import { TEST_USERS } from '../fixtures/user-roles';
 
+// Cookies must be set on the host under test
+const COOKIE_DOMAIN = new URL(process.env.TARGET_URL || 'http://localhost:3000').hostname;
+
 test.describe('Cookie Manipulation', () => {
   test('modifying role/permission cookies should not escalate privileges', async ({
     page,
@@ -774,10 +777,10 @@ test.describe('Cookie Manipulation', () => {
 
     // Attempt to inject role escalation cookies
     await context.addCookies([
-      { name: 'role', value: 'admin', domain: 'localhost', path: '/' },
-      { name: 'isAdmin', value: 'true', domain: 'localhost', path: '/' },
-      { name: 'permissions', value: 'admin,superuser', domain: 'localhost', path: '/' },
-      { name: 'user_level', value: '999', domain: 'localhost', path: '/' },
+      { name: 'role', value: 'admin', domain: COOKIE_DOMAIN, path: '/' },
+      { name: 'isAdmin', value: 'true', domain: COOKIE_DOMAIN, path: '/' },
+      { name: 'permissions', value: 'admin,superuser', domain: COOKIE_DOMAIN, path: '/' },
+      { name: 'user_level', value: '999', domain: COOKIE_DOMAIN, path: '/' },
     ]);
 
     // Navigate to admin page
@@ -799,7 +802,7 @@ test.describe('Cookie Manipulation', () => {
       {
         name: 'username',
         value: '<script>alert("xss")</script>',
-        domain: 'localhost',
+        domain: COOKIE_DOMAIN,
         path: '/',
       },
     ]);
@@ -815,7 +818,7 @@ test.describe('Cookie Manipulation', () => {
       {
         name: 'session',
         value: 'expired-session-token-12345',
-        domain: 'localhost',
+        domain: COOKIE_DOMAIN,
         path: '/',
         expires: Math.floor(Date.now() / 1000) - 86400, // Expired yesterday
       },
@@ -835,9 +838,12 @@ test.describe('Cookie Manipulation', () => {
 // tests/security/auth-bypass/oauth-flow.spec.ts
 import { test, expect } from '@playwright/test';
 
+// Your identity provider's callback route (e.g. /api/auth/callback/<provider>)
+const OAUTH_CALLBACK = process.env.OAUTH_CALLBACK_PATH || '/api/auth/callback/provider';
+
 test.describe('OAuth Flow Security', () => {
   test('OAuth callback should validate state parameter', async ({ request }) => {
-    const response = await request.get('/api/auth/callback/google', {
+    const response = await request.get(OAUTH_CALLBACK, {
       params: {
         code: 'valid-looking-auth-code',
         state: 'tampered-state-value',
@@ -850,12 +856,12 @@ test.describe('OAuth Flow Security', () => {
 
   test('OAuth callback should reject replayed authorization codes', async ({ request }) => {
     // First use of the code
-    const firstResponse = await request.get('/api/auth/callback/google', {
+    const firstResponse = await request.get(OAUTH_CALLBACK, {
       params: { code: 'single-use-auth-code', state: 'matching-state' },
     });
 
     // Second use of the same code should be rejected
-    const replayResponse = await request.get('/api/auth/callback/google', {
+    const replayResponse = await request.get(OAUTH_CALLBACK, {
       params: { code: 'single-use-auth-code', state: 'matching-state' },
     });
 
@@ -1078,9 +1084,10 @@ import pytest
 import requests
 import base64
 import json
+import os
 import time
 
-BASE_URL = "http://localhost:3000"
+BASE_URL = os.environ.get("TARGET_URL", "http://localhost:3000")
 
 class TestAuthBypass:
     """Comprehensive authentication bypass testing suite."""
@@ -1268,13 +1275,13 @@ class TestAuthBypass:
 
 2. **Log all auth decisions server-side** -- When a test fails unexpectedly, check server logs for the authentication and authorization decision chain. Look for middleware ordering issues where an auth check runs after the handler has already returned data.
 
-3. **Test with curl first** -- Before writing Playwright tests, verify the vulnerability with a simple curl command. This isolates whether the issue is in the application or in your test setup. For example: `curl -H "Authorization: Bearer tampered-token" http://localhost:3000/api/admin/users`.
+3. **Test with curl first** -- Before writing automated tests, verify the vulnerability with a simple curl command. This isolates whether the issue is in the application or in your test setup. For example: `curl -H "Authorization: Bearer tampered-token" http://localhost:3000/api/admin/users`.
 
 4. **Check middleware ordering** -- Many auth bypass vulnerabilities stem from middleware running in the wrong order. If the response handler runs before the auth middleware, the endpoint is unprotected. Print middleware execution order during debugging.
 
-5. **Inspect JWT contents at jwt.io** -- Paste tokens into jwt.io to visually inspect their headers and payloads. Verify that the algorithm matches your expectation, that expiration times are reasonable, and that role claims are accurate.
+5. **Decode JWTs locally, never on a website** -- A token is a live credential; pasting it into an online decoder hands it to a third party. Decode the header and payload locally instead, e.g. `node -e "const [h,p]=process.argv[1].split('.');console.log(JSON.parse(Buffer.from(h,'base64url')),JSON.parse(Buffer.from(p,'base64url')))" <token>`. Verify that the algorithm matches your expectation, that expiration times are reasonable, and that role claims are accurate.
 
-6. **Use Playwright trace viewer for session issues** -- When session fixation or cookie tests fail, generate a Playwright trace (`trace: 'on'`) and step through the request timeline to see exactly when cookies are set, modified, and sent.
+6. **Use your framework's trace or network recorder for session issues** -- When session fixation or cookie tests fail, record a trace (e.g. Playwright `trace: 'on'`, Cypress video + network log, or a browser HAR) and step through the request timeline to see exactly when cookies are set, modified, and sent.
 
 7. **Verify test isolation** -- If auth tests pass individually but fail when run together, you have a state leak. Use `test.describe.serial()` with explicit setup/teardown, or run each test in its own browser context.
 

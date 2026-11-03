@@ -52,7 +52,7 @@ Paths below use `$QA_GLOBAL_HOME` notation — on Windows that's `%QA_GLOBAL_HOM
 - **Overrides:** `{project}/Manual Execution/bug-overrides.json`
 - **Descriptions:** `{project}/Manual Execution/bug-descriptions.json` ← Claude writes summaries/descriptions here
 - **Tracking:** `{project}/Manual Execution/reported-bugs.json`
-- **Credentials:** `.env` in the folder you run the script from (`Manual Execution/` — the script also checks its parent, the project root) or `$QA_GLOBAL_HOME/scripts/.env` (see `.env.example`)
+- **Credentials:** `.env` in the folder you run the script from (`Manual Execution/` — the script also checks its parent, the project root), the file named by `QA_SECRETS_FILE`, or the per-user `~/.qa-global/.env` (see `.env.example`). Never put credentials inside the global QA folder.
 
 ## Workflow
 
@@ -103,7 +103,7 @@ Epic 2: PROJ-1029, PROJ-1038, PROJ-1041
 Ask: "Are there any custom section names in Bug Summaries.txt besides 'Epic N:'? (e.g., a 'Permissions' section that maps to a specific parent)"
 
 **Question 5 — Environment details:**
-Ask for the module navigation path (e.g., "HR > Payroll") and test environment name (e.g., "Staging") — used in generated descriptions.
+Ask for the module navigation path (e.g., "Billing > Invoices") and test environment name (e.g., "Staging") — used in generated descriptions.
 
 **After collecting answers**, generate `bug-reporter.config.json` with this structure:
 

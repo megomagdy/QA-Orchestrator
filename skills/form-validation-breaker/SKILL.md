@@ -414,6 +414,8 @@ export { expect } from '@playwright/test';
 
 ## Writing the Tests
 
+The examples use Playwright and match English labels and messages (`/sign up|register|submit/i`, `/error|required|invalid/i`). For another framework, translate the calls; for another language, or a product with several, locate controls by test id or role plus your translated label, and detect errors by state (`aria-invalid`, `role="alert"`, the field's error element) rather than by English words.
+
 ### Boundary Value Testing
 
 ```typescript
@@ -750,9 +752,9 @@ test.describe('Client-Side Validation Bypass', () => {
     }
 
     // Verify the server did not accept the manipulated values
-    // This assertion depends on your application's behavior
+    // This assertion depends on your application's behavior: use its own success text and currency format
     const pageText = await page.textContent('body');
-    expect(pageText).not.toMatch(/order confirmed.*\$0\.01/i);
+    expect(pageText).not.toMatch(/order confirmed.*0[.,]01/i);
   });
 });
 ```
@@ -898,11 +900,11 @@ export default defineConfig({
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },
+  // Validation can differ per browser engine (native input types, date pickers): run every engine your users use
   projects: [
-    {
-      name: 'chromium',
-      use: { browserName: 'chromium' },
-    },
+    { name: 'chromium', use: { browserName: 'chromium' } },
+    { name: 'firefox', use: { browserName: 'firefox' } },
+    { name: 'webkit', use: { browserName: 'webkit' } },
   ],
 });
 ```
@@ -910,7 +912,7 @@ export default defineConfig({
 ## Best Practices
 
 1. **Always test server-side validation independently from client-side** -- Use direct API calls (fetch/axios) to submit data that bypasses the browser entirely. If the server accepts it, the validation is incomplete.
-2. **Test with the actual character encoding your database uses** -- MySQL in `utf8` mode (not `utf8mb4`) truncates 4-byte Unicode characters silently. Test with emoji and supplementary plane characters to verify full Unicode support.
+2. **Test with the actual character encoding your database uses** -- Some databases truncate 4-byte characters silently (e.g. MySQL in `utf8` mode, not `utf8mb4`) truncates 4-byte Unicode characters silently. Test with emoji and supplementary plane characters to verify full Unicode support.
 3. **Verify error messages do not reveal internal details** -- Stack traces, database column names, file paths, and framework version numbers in error messages are information disclosure vulnerabilities.
 4. **Test all input fields, not just the obvious ones** -- Hidden fields, dropdown values, radio button values, and URL parameters can all be manipulated by an attacker. Every server-side value that came from the client must be validated.
 5. **Include timing-based tests** -- A login form that responds in 100ms for invalid usernames but 500ms for valid ones leaks user enumeration information. Measure response times for different payloads.
@@ -920,7 +922,8 @@ export default defineConfig({
 9. **Check for mass assignment vulnerabilities** -- Add extra fields to the form submission (like `role=admin` or `isVerified=true`) that are not in the original form. The server must whitelist allowed fields.
 10. **Verify consistent validation between create and update operations** -- The same validation rules that apply when creating a record must also apply when updating it. Test both paths.
 11. **Test multi-value fields and arrays** -- Fields like `tags[]` or `categories[]` can be manipulated to send unexpected data types. Send a string where an array is expected and vice versa.
-12. **Automate regression testing for every fixed vulnerability** -- When a validation bug is found and fixed, add a specific test for that exact payload to prevent regression.
+12. **Test that valid international input is ACCEPTED** -- Rejecting valid data is a defect too: names with accents and non-Latin scripts, right-to-left text, internationalised email addresses and domains (`user@bücher.example`), local phone and postcode formats, and the locale's decimal separator.
+13. **Automate regression testing for every fixed vulnerability** -- When a validation bug is found and fixed, add a specific test for that exact payload to prevent regression.
 
 ## Anti-Patterns to Avoid
 
@@ -934,7 +937,7 @@ export default defineConfig({
 
 ## Debugging Tips
 
-- **Use Playwright's request interception to inspect submitted data** -- Add `page.on('request', ...)` to log the exact payload being sent. Compare it against what you intended to verify that the framework is not sanitizing your test payloads before submission.
+- **Use your framework's request interception to inspect submitted data** -- e.g. Playwright `page.on('request', ...)`, Cypress `cy.intercept`, or the browser DevTools Network tab; log the exact payload being sent. Compare it against what you intended to verify that the framework is not sanitizing your test payloads before submission.
 - **Check for double encoding** -- If your test payload contains `%3C` and the server sees `%253C`, the payload is being URL-encoded twice. This can mask injection vectors during testing.
 - **Inspect browser validation API directly** -- Use `page.evaluate(() => document.querySelector('input').validity)` to check the HTML5 ValidityState object and understand exactly which validation constraint is triggering.
 - **Test with different Content-Type headers** -- Submitting the same data as `application/json`, `application/x-www-form-urlencoded`, and `multipart/form-data` can produce different server-side parsing behavior. Some validation may only apply to one content type.

@@ -16,7 +16,7 @@
 //
 // Tables are recognised by their header row, following the /review output format:
 //   questions  — header has "Priority" and a "Q-ID"/"Question" column; closed when Priority contains CLOSED
-//   conflicts  — header has "Conflict";  closed when the conflict cell contains "[Resolved"
+//   conflicts  — header has "Conflict";  closed when the conflict cell contains "[Resolved" or the row contains "**Resolved by"
 //   findings   — header has "Finding";   closed when the finding cell starts with "**Resolved"
 //   design     — header has "Divergence"; closed when the divergence cell says "No longer a divergence"
 // Other tables (status per question, reconciliation, inputs…) are ignored.
@@ -79,7 +79,7 @@ function collect(md) {
       if (!id || items.has(id)) continue; // first canonical table wins
       const pri = kind === 'question' ? plain(r[head.indexOf('priority')]) : '';
       const closed = kind === 'question' ? /CLOSED/i.test(pri)
-        : kind === 'conflict' ? /\[Resolved/i.test(r[1] || '')
+        : kind === 'conflict' ? /\[Resolved/i.test(r[1] || '') || /\*\*Resolved by\b/i.test(text)
         : /^\*\*Resolved/i.test((r[1] || '').trim());
       const title = plain(r[1]).replace(/^\[[^\]]+\]\s*/, '').slice(0, 90);
       const raisedAs = kind === 'finding' ? r[head.indexOf('raised as')] || '' : '';

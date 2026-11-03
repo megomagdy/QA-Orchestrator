@@ -1,10 +1,10 @@
 # Token-Efficient Test Case Execution with Claude Code & Codex
 
-Oct 10, 2026 · Mohamed Magdy
+Last updated: Oct 10, 2026
 
 ## Final strategy — who does what
 
-Claude Code and Codex each build their own Playwright specs from the same QMetry cases, in separate folders, and each runs its own suite; a script compares the two runs, so you review only the cases where they disagree. The agents do every cheap step themselves; you keep only the four steps that need a human: login, exporting the cases, confirming bugs, and triggering /report-bugs. The plan starts after test case writing: its input is your finished test case Excel in the QMetry template.
+Claude Code and Codex each build their own Playwright specs from the same test-management cases, in separate folders, and each runs its own suite; a script compares the two runs, so you review only the cases where they disagree. The agents do every cheap step themselves; you keep only the four steps that need a human: login, exporting the cases, confirming bugs, and triggering /report-bugs. The plan starts after test case writing: its input is your finished test cases, exported from your test-management tool as a spreadsheet.
 
 **Two modes, chosen per project. Single-agent mode is the default**: only claude/ or only codex/ exists and Step 5b is skipped. Dual mode (both agents run, comparison on) pays for the most expensive step, Step 4, twice, so use it as a pilot on one module or for P1 cases only, note the cost and the extra bugs it caught, and keep it only where that is worth it. Wherever this doc says Claude Code for a shared step (scripts, review page, bug logging, results, upload), read it as the lead agent: the one you are using, or Claude Code in dual mode. Bug verification never waits for the second agent or the comparison: the review page is built from whichever agent results exist, and shows the second agent's result when it arrives.
 
@@ -13,7 +13,7 @@ Claude Code and Codex each build their own Playwright specs from the same QMetry
 | 1 | Project + both agent folders, configs, rules files (Steps 1–2) | Claude Code | Low | Once per project |
 | 2 | Connect Playwright MCP (Step 3) | Each agent runs its own command; you restart the session | Low | Once |
 | 3 | Save login to auth.json | You (log in by hand) | None | When session expires |
-| 4 | Export / save the QMetry-template Excel | You | None | Per feature |
+| 4 | Export / save the test-tool spreadsheet | You | None | Per feature |
 | 5 | Convert Excel to case files (Step 4a) | Claude Code runs the script | Very low | Per feature |
 | 6 | Write specs (Steps 4b–4c) | The agent in its folder (dual mode: both, independently) | High (paid twice in dual mode) | Once per feature + changed cases |
 | 7 | Run suite + failure summary (Step 5) | Each agent in its own folder | Low | Every run |
@@ -22,16 +22,16 @@ Claude Code and Codex each build their own Playwright specs from the same QMetry
 | 10 | Verify candidate bugs in bug-review.html (full details + evidence) | You | None | Runs with failures |
 | 11 | Log bugs per the bug-report skill (Step 6c) | Claude Code, once for both agents | Low | After you confirm |
 | 12 | File bugs to Jira / Azure DevOps | You run /report-bugs (script files them) | Low | After step 11 |
-| 13 | Results Excel + QMetry upload (Steps 6a, 6d) | Claude Code runs the scripts | Very low | Every run (upload: Jira projects) |
+| 13 | Results spreadsheet + test-tool upload (Steps 6a, 6d) | Claude Code runs the scripts | Very low | Every run (upload: when the test tool has an import API) |
 | 14 | Manual cases: functional / visual (Step 7) | Claude Code / you | Medium / none | Manual cases only |
 | 15 | Cross-validate the cases before Step 4 (Step 3b) | Lead agent, cross-validate skill | Medium | Once per feature |
 | 16 | Sync lessons to the global QA folder | Lead agent, sync-global skill | Low | End of each feature |
 
 Dual mode doubles only row 6. As a rough guide, at 10–20k tokens per case that is about 1–2M tokens per agent per 100 cases, once per feature; each later run costs each agent a few thousand tokens plus its triage. Note the usage each tool reports at the end of a feature to compare cost as well as results.
 
-**Fixed cost per session: the instruction files.** Every new session, and every `/clear`, reloads them before any work starts. Claude Code reads every CLAUDE.md from its folder up to the drive root; a full playbook CLAUDE.md is about 100–120 KB (25–30k tokens), and D:\Idaratech\CLAUDE.md adds about 39 KB. So:
+**Fixed cost per session: the instruction files.** Every new session, and every `/clear`, reloads them before any work starts. Claude Code reads every CLAUDE.md from its folder up to the drive root; a full playbook CLAUDE.md is about 100–120 KB (25–30k tokens), and a workspace-level CLAUDE.md above it can add tens of KB more. So:
 
-- Put qa-run **outside** any folder that has a large CLAUDE.md, for example `D:\QA-Runs\<feature>\qa-run`, never inside `D:\Idaratech\<feature>\`.
+- Put qa-run **outside** any folder that has a large CLAUDE.md, for example `<drive>\QA-Runs\<feature>\qa-run`, never inside your workspace's `<feature>` folder.
 - Keep qa-run's own CLAUDE.md lean: the run rules plus the Lessons Learned Log only (Step 2). The full playbook stays in the feature folder where the cases were written; test design rules are not needed to execute.
 - Check it once: `/context` in Claude Code shows how many tokens the memory files take.
 
@@ -56,7 +56,7 @@ Folder layout the agents will rely on:
 
 ```text
 qa-run/
-  testcases/<feature>_qmetry.xlsx  # QMetry-template Excel, never edited
+  testcases/<feature>_cases.xlsx  # test-tool export, never edited
   testcases/cases.json             # generated (Step 4a), read by scripts
   testcases/cases/<module>.md      # generated, compact, read by agents
   scripts/                         # shared helper scripts (Steps 3c–6): save-login.js, check-access.js, failures.js ...
@@ -72,14 +72,14 @@ qa-run/
   qa-rules-condensed.md            # read by your skills from the project root (only when a skill needs it)
   auth.json                        # saved login of the default role, all portals (git-ignored)
   auth/<portal>-<role>.json        # one saved login per extra role (git-ignored)
-  .env                             # portal URLs, test-account credentials, QMetry API key (git-ignored)
+  .env                             # portal URLs, test-account credentials, test-tool API key (git-ignored)
   claude/                          # Claude Code works only here
     playwright.config.ts  tests/  results/ (artifacts/ emptied each run, evidence/ kept)  manual_cases.json
   codex/                           # Codex works only here
     AGENTS.md  playwright.config.ts  tests/  results/  manual_cases.json
 ```
 
-Export the feature's test cases from QMetry to Excel and save the file unedited in `testcases/`. A QMetry export has one row per step: case fields (key, summary, precondition, priority) on the case's first row, step rows (step summary, test data, expected result) below it. The converter in Step 4a handles that layout; results never go into this file.
+Export the feature's test cases from your test-management tool to a spreadsheet and save the file unedited in `testcases/`. A typical export has one row per step: case fields (key, summary, precondition, priority) on the case's first row, step rows (step summary, test data, expected result) below it. The converter in Step 4a handles that layout; results never go into this file.
 
 Create `.env`:
 
@@ -102,7 +102,7 @@ export default defineConfig({
     ['dot'],                        // minimal console output
     ['html', { outputFolder: 'results/html', open: 'never' }],
     ['json', { outputFile: 'results/results.json' }],
-    ['junit', { outputFile: 'results/junit.xml' }],  // for the QMetry import
+    ['junit', { outputFile: 'results/junit.xml' }],  // for the test-tool results import
   ],
   outputDir: 'results/artifacts',
   globalTeardown: '../support/keep-evidence.ts', // copies failure evidence to results/evidence (kept across runs)
@@ -187,8 +187,8 @@ Put the standing rules in one file so every prompt stays short. Save this as `QA
 6. Write each spec file in one edit. Do not explain code in chat. End every task with a summary of 10 lines or fewer.
 
 ## Quality rules
-1. One QMetry case = one test titled "<QMetry key> | <Summary>", tagged @ui or @api and @p1/@p2/@p3.
-2. Each QMetry step = one test.step('<Step Summary>') so the report shows the exact failing step.
+1. One test-management case = one test titled "<case key> | <Summary>", tagged @ui or @api and @p1/@p2/@p3.
+2. Each test-tool step = one test.step('<Step Summary>') so the report shows the exact failing step.
 3. Each Expected Result = explicit expect() assertions. No test without assertions.
 4. Locators: getByRole > getByLabel > getByPlaceholder > getByTestId > getByText. CSS/XPath only with a comment saying why.
 5. No waitForTimeout. Use web-first assertions (toBeVisible, toHaveText, toHaveURL).
@@ -212,7 +212,7 @@ Script Assertion Error: the app matches the case's Expected Result, but the expe
 correctly (typo, whitespace or letter-case formatting, wrong regex, text read from the wrong element). Fix it so the
 assertion checks the Expected Result exactly as written - never so it matches what the app shows when that differs
 from the Expected Result (that is an Actual Bug). List every such fix with the expect() line before and after. An Environment Issue is never a bug. A Test Logic Error (the case's expected result is wrong) is not a bug
-and not a script fix: report it to the user to correct the QMetry case.
+and not a script fix: report it to the user to correct the test-management case.
 
 ## Skills and shared files
 - Project root for skills = the qa-run folder (..); qa-rules-condensed.md lives there.
@@ -231,7 +231,7 @@ Bugs are logged only in Step 6c, by the lead agent, after the user confirms them
   Numbering is sequential per section; never reuse a number marked [REPORTED: ...].
 - Evidence: "../Manual Execution/Epic <n>/Bug <m>.png" and "Bug <m> (2).webm"
   (flat in Manual Execution/ for single-section projects).
-- One bug per root cause; list every affected QMetry key. API bugs include the full request and response.
+- One bug per root cause; list every affected case key. API bugs include the full request and response.
 - Full report per bug: "../Manual Execution/Bug Details/Epic <n> - Bug <m>.md" (the name must not start
   with "Bug", so /report-bugs does not attach it as evidence).
 ```
@@ -314,7 +314,7 @@ Catch contradictions, duplicates and coverage gaps in the Excel before any scrip
 
 ```text
 Use the cross-validate skill (Claude Code: /cross-validate, Codex: $cross-validate) on
-testcases/<feature>_qmetry.xlsx, with these sources if they exist: <PRD / QC decisions / design files>.
+testcases/<feature>_cases.xlsx, with these sources if they exist: <PRD / QC decisions / design files>.
 Run the document checks only: contradictions, duplicates, coverage gaps, spec-silent gaps,
 missing boundary and authorization cases.
 Skip the live-DOM part (dom-auditor / test-planner agents): Step 4b explores the screens anyway.
@@ -358,14 +358,14 @@ This is the only expensive step (in dual mode it runs twice: Claude Code in clau
 
 Models: Step 4 on the strongest setting you are willing to pay for (Claude Code: Opus; Codex: gpt-6.1-sol on high, or gpt-6-astra on high for complex modules). Steps 5–7: Claude Code on Sonnet (`/model`), Codex on gpt-6.1-sol medium. Avoid xhigh / max / ultra for these long, many-step runs.
 
-**Prompt 4a — QMetry Excel to case files (Claude Code, qa-run root, once):**
+**Prompt 4a — test-tool export to case files (Claude Code, qa-run root, once):**
 
 ```text
-Read only the header row and first 15 rows of testcases/<feature>_qmetry.xlsx to learn its layout.
-It uses the QMetry template: case fields (Key, Summary, Precondition, Priority, Labels, Components/Folder)
+Read only the header row and first 15 rows of testcases/<feature>_cases.xlsx to learn its layout.
+It uses the team's test-tool export layout, for example: case fields (Key, Summary, Precondition, Priority, Labels, Components/Folder)
 on the first row of each case, one row per step below it (Step Summary, Test Data, Expected Result).
-Write scripts/qmetry_to_json.py, reusable for every project that uses this template (Jira or Azure DevOps):
-- usage: python qmetry_to_json.py <input.xlsx> [output_dir]  (output_dir defaults to testcases/)
+Write scripts/cases_to_json.py, reusable for every project that uses this export layout (any tracker):
+- usage: python cases_to_json.py <input.xlsx> [output_dir]  (output_dir defaults to testcases/)
 - find columns by header name (case-insensitive, trimmed), never by position; fail with a clear
   message listing the headers it could not find
 - group step rows under their case; skip empty rows
@@ -383,7 +383,7 @@ Run it. Reply only with: total cases, total steps, count per module and type, an
 Prompt 4a is paid once in total, not per project. Copy the finished script to your global QA folder and run it in any project that uses the template (no tokens):
 
 ```bash
-python <global-qa-folder>/scripts/qmetry_to_json.py testcases/<feature>_qmetry.xlsx
+python <global-qa-folder>/scripts/cases_to_json.py testcases/<feature>_cases.xlsx
 ```
 
 Re-run it whenever the cases change, then Prompt 4b for the changed cases only. The per-module .md files cost the agent roughly half the tokens of the same cases in JSON, and 4b reads only one module.
@@ -482,7 +482,7 @@ Useful variants:
 
 ```bash
 npx playwright test --grep @p1            # priority 1 only (smoke)
-npx playwright test tests/leave.spec.ts   # one module
+npx playwright test tests/orders.spec.ts   # one module
 npx playwright test -g "TC-012"           # one case
 npx playwright test --last-failed         # re-run only last run's failures
 ```
@@ -498,7 +498,7 @@ npx playwright show-trace results/evidence/<test-folder>/trace.zip
 
 ## Step 5b — Compare Claude Code vs Codex (dual mode only, low tokens)
 
-A script lines up both runs per QMetry key. Agreed passes are accepted; an agreed failure from two independently written scripts is a strong bug candidate; every disagreement means at least one script, or the environment, is wrong.
+A script lines up both runs per case key. Agreed passes are accepted; an agreed failure from two independently written scripts is a strong bug candidate; every disagreement means at least one script, or the environment, is wrong.
 
 | Claude Code | Codex | Meaning | Next |
 | --- | --- | --- | --- |
@@ -512,9 +512,9 @@ A script lines up both runs per QMetry key. Agreed passes are accepted; an agree
 
 ```text
 Write scripts/compare.py that reads claude/results/results.json and codex/results/results.json
-(Playwright JSON reports; test titles start with the QMetry key), claude/manual_cases.json,
+(Playwright JSON reports; test titles start with the case key), claude/manual_cases.json,
 codex/manual_cases.json and testcases/cases.json, and writes:
-- results/comparison.xlsx: one row per QMetry key with Summary, Claude status, Codex status
+- results/comparison.xlsx: one row per case key with Summary, Claude status, Codex status
   (Pass | Fail | Flaky | Manual | Missing), Agree (yes/no), and each side's failed step + first error line
 - results/comparison.md: counts (agreed pass, agreed fail, disagreements, manual, missing)
   and one line per disagreement
@@ -536,10 +536,10 @@ The agent reads only failures.md, fixes script problems, and never edits an asse
 ```text
 Write scripts/write_results.py (openpyxl + Pillow), run from an agent folder as:
   python ../scripts/write_results.py --agent claude|codex
-It creates ../results/<feature>_results_<agent>_<YYYY-MM-DD>.xlsx: a copy of ../testcases/<feature>_qmetry.xlsx
+It creates ../results/<feature>_results_<agent>_<YYYY-MM-DD>.xlsx: a copy of ../testcases/<feature>_cases.xlsx
 with columns Execution Status, Actual Result, Evidence, Screenshot, Video, Trace added and filled on each
 case's first row. Never edit the original. Inputs (relative to the agent folder):
-- results/results.json (Playwright JSON report; test titles start with the QMetry key)
+- results/results.json (Playwright JSON report; test titles start with the case key)
 - results/triage.json ({"KEY": {"class": "...", "actual": "one line"}})
 - manual_cases.json and results/manual_results.json if they exist
 Execution Status = Pass | Fail | Flaky | Blocked (Environment Issue, or a skipped test whose reason starts
@@ -581,7 +581,7 @@ Write scripts/bug_review.py and run it. It builds results/bug-review.html from w
 One card per candidate bug: every key classed Actual Bug by at least one agent, grouped by the defects in
 results/defects.md when present (one card per defect, with its title and severity). Each card shows:
 - key, summary, priority, and each agent's status and classification ("not run" for an absent agent)
-- preconditions, test data and the QMetry steps, with the failed step highlighted
+- preconditions, test data and the test-tool steps, with the failed step highlighted
 - expected result vs actual result (triage line + first error lines)
 - the failure screenshot inline (embedded as a data URI), the video playable inline (relative link),
   and the trace path with the command to open it: npx playwright show-trace <path>
@@ -595,14 +595,14 @@ Open the page in your browser, check each card, and reply to Claude Code with th
 **Prompt 6c — log confirmed bugs (lead agent, qa-run root, bug-report skill):**
 
 ```text
-Confirmed bugs: <QMetry keys>. Log them following the bug-report skill:
+Confirmed bugs: <case keys>. Log them following the bug-report skill:
 1. Start from bug-hunter's grouped defects in results/defects.md (same root cause = one bug). Never log an Environment Issue.
 2. For each bug append "Bug <next number>: [Action] [Component] - [Symptom]" (+ " (back end)" for back-end bugs)
    to "Manual Execution/Bug Summaries.txt" under Epic section <n>; keep numbering sequential.
 3. Evidence from results/evidence/<test-folder>/ of the agent that failed (claude/ first): failure screenshot -> "Manual Execution/Epic <n>/Bug <m>.png",
    video -> "Manual Execution/Epic <n>/Bug <m> (2).webm"; API bugs: request + response -> "Bug <m>.json".
 4. Write the full report to "Manual Execution/Bug Details/Epic <n> - Bug <m>.md" in the bug-report structure:
-   title, environment (URL, browser, role), preconditions, steps to reproduce from the QMetry case, expected,
+   title, environment (URL, browser, role), preconditions, steps to reproduce from the test-management case, expected,
    actual, evidence (screenshot embedded with a relative link, video and trace paths), severity S1-S4 + priority,
    affected keys, workaround, reproducibility (always if both agents and the retry failed; intermittent if flaky).
 5. Run the results writer in each agent folder that has results.
@@ -617,29 +617,29 @@ An agent can quick-check its fixes with the command below, but always finish wit
 npx playwright test --last-failed > results/run.log 2>&1; node ../scripts/failures.js
 ```
 
-**Step 6d — push results to a QMetry test cycle (Claude Code, one command per run, Jira projects):**
+**Step 6d — push results to a test cycle in your test-management tool (Claude Code, one command per run, when the tool has an import API; example below: QMetry for Jira):**
 
-QMetry for Jira imports JUnit result files through its REST API, creates or reuses a test cycle, and reuses existing test cases whose summary or key matches exactly ([QMetry docs](https://qmetrysupport.atlassian.net/wiki/spaces/QTM4JD480/pages/3617154864/Automation), [import parameters](https://www.Jenkins.io/doc/pipeline/steps/qmetry-for-jira-test-management/)). The JUnit import carries pass/fail status only, not attachments ([supported formats](https://qmetrysupport.atlassian.net/wiki/x/zIGoOw)), so the screenshots stay in the results Excel and the bug tickets. This assumes QMetry for Jira; generate an automation API key in QMetry and add QMETRY_URL and QMETRY_API_KEY to `.env`.
+For example, QMetry for Jira imports JUnit result files through its REST API, creates or reuses a test cycle, and reuses existing test cases whose summary or key matches exactly ([QMetry docs](https://qmetrysupport.atlassian.net/wiki/spaces/QTM4JD480/pages/3617154864/Automation), [import parameters](https://www.Jenkins.io/doc/pipeline/steps/qmetry-for-jira-test-management/)). The JUnit import carries pass/fail status only, not attachments ([supported formats](https://qmetrysupport.atlassian.net/wiki/x/zIGoOw)), so the screenshots stay in the results Excel and the bug tickets. This assumes QMetry for Jira; generate an automation API key in QMetry and add TESTTOOL_URL and TESTTOOL_API_KEY to `.env`.
 
 Prompt 6d (once per project):
 
 ```text
 Read QA_RUN_RULES.md first.
-Write scripts/qmetry_upload.py that:
-1. copies results/junit.xml to results/junit_qmetry.xml, renaming each testcase so its name is exactly
-   the QMetry Summary of its key from ../testcases/cases.json (the script runs from an agent folder);
-2. uploads that file to the QMetry for Jira Import Results API using QMETRY_URL and QMETRY_API_KEY from .env,
+Write scripts/results_upload.py that:
+1. copies results/junit.xml to results/junit_import.xml, renaming each testcase so its name is exactly
+   the test-tool Summary of its key from ../testcases/cases.json (the script runs from an agent folder);
+2. uploads that file to the test tool's import-results API (e.g. QMetry for Jira Import Results) using TESTTOOL_URL and TESTTOOL_API_KEY from .env,
    reusing the test cycle key passed as the first argument.
-Follow the official QMetry automation API docs for the request format. Do not run the upload; I will.
+Follow your test tool's official automation API docs for the request format. Do not run the upload; I will.
 ```
 
 Every run, after bugs are logged (dual mode: once comparison.md shows no open disagreements), the lead agent runs from its own folder:
 
 ```bash
-python ../scripts/qmetry_upload.py <TEST-CYCLE-KEY>
+python ../scripts/results_upload.py <TEST-CYCLE-KEY>
 ```
 
-Try the first upload on a throwaway test cycle. If QMetry creates new test cases instead of reusing yours, the names did not match exactly; fix the renaming before using a real cycle. Azure DevOps projects skip Step 6d: results stay in the results Excel and bugs go to Azure DevOps through /report-bugs.
+Try the first upload on a throwaway test cycle. If the test tool creates new test cases instead of reusing yours, the names did not match exactly; fix the renaming before using a real cycle. Azure DevOps projects skip Step 6d: results stay in the results Excel and bugs go to Azure DevOps through /report-bugs.
 
 ## Step 7 — Manual and visual cases (agent + MCP, medium tokens)
 
@@ -672,8 +672,8 @@ Skip cases whose reason is visual judgement; list them at the end for me.
 2. Prompt 5 to each agent you use for this project, in its folder.
 3. Dual mode only: Prompt 5b-2 to Claude Code for the counts and disagreements; it never blocks bug verification.
 4. Failures: Prompt 6b, then Prompt 5, in each agent as it finishes; Prompt 6b-2, then verify the candidates in bug-review.html (you); Prompt 6c (Claude Code); run `/report-bugs` (you trigger it).
-5. After bugs are logged (dual mode: and no open disagreements), the lead agent runs the results writer and, on Jira projects, the QMetry upload from its folder.
-6. Cases changed: re-export the Excel (you); Claude Code re-runs `qmetry_to_json.py`; Prompt 4b for the changed cases, then 4c, in both agents.
+5. After bugs are logged (dual mode: and no open disagreements), the lead agent runs the results writer and, where the test tool supports it, the results upload from its folder.
+6. Cases changed: re-export the Excel (you); Claude Code re-runs `cases_to_json.py`; Prompt 4b for the changed cases, then 4c, in both agents.
 
 **Watch mode (see Chrome while the agents work; costs no extra tokens, images are never sent to the model):**
 
@@ -694,7 +694,7 @@ Reply only with the access lines that are not ready and the count line printed b
 
 **Codex on Windows:** its sandbox blocks launching Chrome (`browserType.launch: spawn EPERM`), so test runs and check-access.js fail inside it; the MCP is not affected (MCP servers run outside the sandbox). The first time Codex asks to run `npx playwright test` or `node ../scripts/...` outside the sandbox, approve it with the "always allow this command" option, so only those commands get that permission. Do not switch Codex to full access for this.
 
-**End of each feature (lead agent, qa-run root):** run the sync-global skill (Claude Code: `/sync-global`, Codex: `$sync-global`). It generalizes the new entries in the Lessons Learned Log of CLAUDE.md into your global playbook template and qa-rules-condensed.md, so the next project starts with them. Also test cases flagged as Test Logic Error go back into the QMetry Excel here.
+**End of each feature (lead agent, qa-run root):** run the sync-global skill (Claude Code: `/sync-global`, Codex: `$sync-global`). It generalizes the new entries in the Lessons Learned Log of CLAUDE.md into your global playbook template and qa-rules-condensed.md, so the next project starts with them. Also test cases flagged as Test Logic Error go back into the test-tool spreadsheet here.
 
 **Token-heavy steps you can choose to do yourself:**
 

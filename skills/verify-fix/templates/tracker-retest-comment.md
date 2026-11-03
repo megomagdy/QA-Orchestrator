@@ -1,8 +1,8 @@
-# Jira retest comments
+# Issue-tracker retest comments
 
-Post only after the user's go-ahead. Follow the project's Jira rules first — some projects close with **no comment**
+Post only after the user's go-ahead. Follow the project's tracker rules first — some projects close with **no comment**
 (then skip the "Fixed" comment and just transition). State the problem only: no root cause, no suggested fix.
-Build the comment in a file (ADF for Jira, so the @mention notifies the developer); never inline a long text in a shell
+Build the comment in a file, in the tracker's rich format so the @mention notifies the developer (e.g. Jira ADF, Azure DevOps HTML, GitHub Markdown); never inline a long text in a shell
 string (apostrophes and backticks break it). Read the issue back after posting.
 
 ## Fixed → close ("Done" / "Testing is Done")

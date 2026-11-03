@@ -1,7 +1,7 @@
 ---
 name: unified-qa
 description: |
-  **Unified QA Engineering Skill** — Master skill for all QA activities on any web/ERP platform. Combines: test case design (test-management import format), live DOM auditing, RBAC enforcement TC generation, module-areas config management, investigation methodology, and cross-validation practices. Use this skill for ANY QA-related task: writing test cases, auditing UI, generating permission tests, investigating epics, cross-validating test suites, or producing test-management import files.
+  **Unified QA Engineering Skill** — Master skill for all QA activities on any web application. Combines: test case design (test-management import format), live DOM auditing, RBAC enforcement TC generation, module-areas config management, investigation methodology, and cross-validation practices. Use this skill for ANY QA-related task: writing test cases, auditing UI, generating permission tests, investigating epics, cross-validating test suites, or producing test-management import files.
   - MANDATORY TRIGGERS: test case, QA, quality, audit, DOM, permission test, RBAC, enforcement, module areas, test management import, investigation, QC decision, cross-validation, epic, test design
 ---
 
@@ -37,7 +37,7 @@ You are an **expert Senior QA Engineer** operating under a **Shift-Left, Risk-Ba
 |-------|----------|--------------|
 | Unit / API contract | 70% | Field validations, business logic, calculation rules, API schemas |
 | Integration / E2E flows | 20% | Multi-step workflows, cross-module interactions |
-| Exploratory / UI | 10% | Visual regressions, RTL layout, edge-case interactions |
+| Exploratory / UI | 10% | Visual regressions, locale / RTL layout (if the product supports it), edge-case interactions |
 
 ### 1.3 Regulatory Compliance Awareness
 
@@ -179,7 +179,7 @@ Before writing test cases for a new epic, review ALL previous epics' confirmed d
 **Rule 3: Executable Steps**
 Every test step must be written so it can be executed in THREE ways:
 1. **Manually by a human tester** — clear enough for someone unfamiliar with the system
-2. **By Claude using MCP tools** — specific element names, exact values, verifiable outcomes
+2. **By an AI agent using browser-automation tools** — specific element names, exact values, verifiable outcomes
 3. **By an automation script** — deterministic selectors, wait conditions, assertions
 
 This means: no vague language, no assumed context, exact field names, exact values, exact expected states.
@@ -210,7 +210,7 @@ The final expected result names the distinguishing outcome — never a generic e
 | **P0** | Core business flow, regulatory compliance, data integrity, tenant isolation |
 | **P1** | Important validations, common user errors, linked-state blocking |
 | **P2** | Edge cases, boundary values, concurrent edit scenarios |
-| **P3** | Cosmetic, UX polish, RTL alignment precision |
+| **P3** | Cosmetic, UX polish, locale / RTL alignment precision |
 
 ### 3.3 Writing Effective Test Steps
 
@@ -285,9 +285,9 @@ A healthy test suite should approximate:
 
 ## 4. Test Management Import Format
 
-> **Customize this section to YOUR test management tool** (Qmetry, TestRail, Zephyr, Xray, Azure Test Plans, ...). The mapping below is a worked EXAMPLE from a production Qmetry setup — replace headers/columns per your tool's import template, and always verify against a real template file (`/init-workspace` stores its location). The multi-row pattern and critical rules apply to most tools.
+> **Customize this section to YOUR test management tool** (Qmetry, TestRail, Zephyr, Xray, Azure Test Plans, ...). The mapping below is a worked EXAMPLE from one production test-management setup — replace headers/columns per your tool's import template, and always verify against a real template file (`/init-workspace` stores its location). The multi-row pattern and critical rules apply to most tools.
 
-### 4.1 Example: 25-Column Template (Qmetry-style)
+### 4.1 Example: a 25-Column Import Template
 
 | Col | Header | Content |
 |-----|--------|---------|
@@ -341,10 +341,10 @@ Row N+5: [Next TC Header] ...
 
 | File Type | Pattern |
 |-----------|---------|
-| Full import | `[TestTool] Import - [Project] Epics {n} & {n}.xlsx` |
-| Epic-specific | `[TestTool] Import - [Project] Epic {n}.xlsx` |
-| Delta/correction | `[TestTool] Import - CORRECTED Epic {n} [description].xlsx` |
-| QA Review | `QA Review - Epic {n} - [Name].md` or `.docx` |
+| Full import | `[TestTool] Import - [Project] Epics {n} & {n}.<ext>` (your tool's import format, e.g. `.xlsx` / `.csv`) |
+| Epic-specific | `[TestTool] Import - [Project] Epic {n}.<ext>` |
+| Delta/correction | `[TestTool] Import - CORRECTED Epic {n} [description].<ext>` |
+| QA Review | `QA Review - Epic {n} - [Name].md` or the team's document format |
 
 ---
 
@@ -425,7 +425,7 @@ Verify that UI elements referenced in test cases actually exist in the live appl
 **Phase 2: Page-by-Page Audit**
 For each page:
 1. Navigate to the page
-2. Wait 2-3 seconds for SPA rendering
+2. Wait for the page to finish rendering (single-page apps: wait for a ready element, not a fixed delay)
 3. Take a screenshot for visual confirmation
 4. Run JavaScript audit to extract actual elements:
 
@@ -464,7 +464,7 @@ These are real patterns that produce invalid test cases:
 | Card-based UI assumed to be a table | Module uses clickable service cards, not data tables with CRUD buttons |
 | ⋮ (three-dot) menus assumed to exist | Some layouts don't have row-level action menus even if similar pages do |
 | Eye icon assumed to be Edit | Eye icon means View, not Edit |
-| Buttons assumed from module name | Module called "Settlements" doesn't necessarily have Add/Edit buttons |
+| Buttons assumed from module name | Module called "Reports" doesn't necessarily have Add/Edit buttons |
 | Tabs without `role="tab"` | Some tabs use styled `<a>` or `<button>` without ARIA roles |
 | Empty-state hides buttons | Buttons may only appear when data exists |
 | Actions only in detail view | Edit/Delete may only appear after clicking into a record, not on the list page |
@@ -500,7 +500,7 @@ For each role:
 ### 7.4 ACCESS DENIED Test Pattern
 
 When a role cannot access a module, verify:
-1. Module NOT visible in sidebar navigation
+1. Module NOT visible in the app navigation (sidebar, menu or tab bar)
 2. Direct URL navigation → redirect to home or 403
 3. No data from this module accessible via API
 
@@ -708,7 +708,7 @@ When updating module config:
 ## BUG-{ID}: {Title}
 **Severity:** Blocker / Critical / Major / Minor
 **Priority:** P0 / P1 / P2 / P3
-**Environment:** {browser, OS, tenant}
+**Environment:** {browser, OS, account / tenant}
 **Linked TC:** {TC ID}
 
 ### Steps to Reproduce:

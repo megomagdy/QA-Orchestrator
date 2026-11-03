@@ -26,10 +26,8 @@ const environments = {
     baseURL: 'https://staging.example.com',
     apiURL: 'https://api-staging.example.com',
   },
-  production: {
-    baseURL: 'https://example.com',
-    apiURL: 'https://api.example.com',
-  },
+  // No production entry on purpose: tests run against test environments only (see Anti-Patterns).
+  // Add a read-only smoke project separately if your team runs post-deploy checks.
 };
 
 export default defineConfig({
@@ -43,7 +41,7 @@ export default defineConfig({
     ['html', { open: 'never', outputFolder: 'test-results/html' }],
     ['json', { outputFile: 'test-results/results.json' }],
     ['junit', { outputFile: 'test-results/junit.xml' }],
-    process.env.CI ? ['github'] : ['list'],
+    process.env.CI ? ['dot'] : ['list'],   // on GitHub Actions, ['github'] adds inline annotations
   ],
 
   use: {

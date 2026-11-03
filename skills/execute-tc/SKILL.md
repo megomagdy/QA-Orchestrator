@@ -1,23 +1,23 @@
 ---
 name: execute-tc
-description: Execute test cases manually via Chrome MCP browser automation. Includes 5-step popup recovery for Angular dialogs. Use for manual test execution with automated browser interaction.
+description: Execute test cases manually via whatever browser-automation tool the session has (a built-in browser, a browser extension, Playwright or Selenium MCP). Includes 5-step popup recovery for unexpected dialogs and overlays. Use for manual test execution with automated browser interaction.
 argument-hint: "TC-ID or all or epic-name"
 ---
 
 # Execute Test Cases — $ARGUMENTS
 
-Execute test cases by driving the browser via Chrome MCP tools.
+Execute test cases by driving a browser with the browser-automation tool available in the session (prefer one the user can watch).
 
 Read `qa-rules-condensed.md` from the project root for condensed QA rules.
 
 ## Prerequisites
 - [ ] Test cases exist (from /write-tests)
 - [ ] Test environment is accessible
-- [ ] Chrome MCP is connected
+- [ ] A browser-automation tool is connected and can reach the environment
 
 ## Execution Flow
 1. Read TC from the test case file (Markdown or cache)
-2. For each step: execute via Chrome MCP, capture result (pass/fail), take screenshot on failure
+2. For each step: execute it in the browser, capture result (pass/fail), take screenshot on failure
 3. If popup/dialog blocks execution: See [popup-recovery.md](popup-recovery.md) for 5-step recovery
 4. Record actual results alongside expected results
 5. After execution: spawn bug-hunter + dom-auditor agents for failure analysis

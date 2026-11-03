@@ -1,7 +1,7 @@
 ---
 name: verify-fix
-description: Retest every In Testing bug of a story that the user reported (other bugs only when the user names them) and, in the same pass, explore what each fix could have broken around it (exploratory regression by a senior QA engineer, not a re-run of written cases). Produces one retest record per run and prepares the Jira close / return actions. Use when the user says "check the In Testing bugs", "retest my In Testing bugs", "verify the fix and the affected area", "make sure the fix didn't break anything", or asks to check new In Testing tickets of a story.
-argument-hint: "story / epic key (e.g. IS-7532), or one or more bug keys"
+description: Retest every In Testing bug of a story that the user reported (other bugs only when the user names them) and, in the same pass, explore what each fix could have broken around it (exploratory regression by a senior QA engineer, not a re-run of written cases). Produces one retest record per run and prepares the issue-tracker close / return actions. Use when the user says "check the In Testing bugs", "retest my In Testing bugs", "verify the fix and the affected area", "make sure the fix didn't break anything", or asks to check new In Testing tickets of a story.
+argument-hint: "story / epic key (e.g. PROJ-123), or one or more bug keys"
 ---
 
 # Verify Fix — $ARGUMENTS
@@ -25,7 +25,7 @@ what) override anything generic here.
   projects close with no comment, some want a retest comment — see §5).
 - **Never file a new bug from the regression.** Findings are presented with ready reproduction steps; the user decides
   (bug / not a bug / file / does it block closing). Record the ruling.
-- **Judge on what the user sees** — a screen, report, export, payslip or API a client renders. A DB-only difference is
+- **Judge on what the user sees** — a screen, report, export, generated document or API a client renders. A DB-only difference is
   not a defect. Validation that refuses on Save is not a fail just because there was no inline message: run the save.
 - **Prove, don't predict.** A result read from code is a *prediction*; label it so and say why it could not run.
 - **Report coverage honestly:** "N of M checks ran", with every Not covered and its reason. Never imply full coverage.
@@ -34,27 +34,27 @@ what) override anything generic here.
 ## 1. Collect the inputs
 
 1. **The bugs — only the ones the user reported.** By default, verify the story's child bugs in status In Testing whose
-   **reporter is the user** (look up their account id once, e.g. `atlassianUserInfo` / `lookupJiraAccountId`).
+   **reporter is the user** (look up their account id once with the tracker's "current user" / user-lookup call).
    Being the assignee does not count: a bug someone else reported that was assigned to the user is not in scope.
-   Example (Jira): `parent = <STORY> AND status = "In Testing" AND reporter = "<accountId>"`.
-   **Exception:** when the user names other tickets, another reporter or another filter ("also Waleed's bugs",
-   "IS-1234 and IS-1240", "all In Testing bugs of the story"), verify exactly those instead.
+   Example query (adapt to your tracker's syntax): parent = <STORY>, status = In Testing, reporter = <the user>.
+   **Exception:** when the user names other tickets, another reporter or another filter ("also another tester's bugs",
+   "PROJ-1234 and PROJ-1240", "all In Testing bugs of the story"), verify exactly those instead.
    Also list once, with status, the story's other open sub-tickets that the user reported, and say which were skipped and
    why (To Do / In Progress / In Review / Blocked = fix not delivered yet). In Testing bugs reported by someone else are
    mentioned in one line as "not yours — not verified", never retested silently.
-   If the tracker connector is down, use the project's REST helper if it has one (e.g. `execution/tools/jira.js`).
+   If the tracker connector is down, use the project's REST helper for the tracker if it has one.
 2. **Per bug:** summary, full description (environment, steps, expected, actual, affected TCs), **all comments** (dev notes,
    earlier retest comments — a bug can come back after a failed retest; re-check the exact path you returned it for), and the
    **changelog**: who moved it to In Testing and when. That developer is the one to reassign to if it fails.
 3. **The fix itself.** `git fetch`, then find the commits naming the bug in every repo
    (`git log --all --grep=<KEY>`), read the **diff** (not just the message), and list which branches contain it
-   (`git branch -r --contains <sha>`). The branch decides the environment: e.g. on staging vs only on a pre-prod
-   canary branch. Note the merge time.
+   (`git branch -r --contains <sha>`). The branch decides the environment: e.g. on the main test environment vs only on a
+   pre-production or canary branch. Note the merge time.
 4. **Confirm it is deployed** before testing it. Front end: the main bundle's `Last-Modified` header must be after the merge.
    Back end: confirm by behaviour (a check the fix changes), or a version endpoint if one exists. If the environment needs
    routing headers (e.g. a canary header), add them to every scripted call.
-5. **Environment state.** Is anyone else using it now (a UAT, another tester)? Which records may you touch? Which tenant /
-   company qualifies (feature gates, migration flags — read the app flag, not a lookalike column)? Logins available.
+5. **Environment state.** Is anyone else using it now (a UAT, another tester)? Which records may you touch? Which account /
+   tenant qualifies (feature gates, migration flags — read the app flag, not a lookalike column)? Logins available.
 
 ## 2. Per-bug flow
 
@@ -64,7 +64,7 @@ For every In Testing bug:
    - Use **fresh data when the fix is on a write path** — a record written before the fix can still carry the old state
      (the fix often prevents new damage but does not repair old rows; say so if the original fixture stays broken).
    - Build a **discriminating check**: something the old build would fail and the new one passes. If your fixture would pass
-     on both builds, say so and build one that cannot (see the IS-8042 example below).
+     on both builds, say so and build one that cannot (see the "discriminating fixture" example below).
    - Verdict: **Fixed / Partly fixed / Not fixed**, with evidence: API status + body, DB values before/after, screenshot.
 2. **Write the charter** (§3) and run its probes in the same session.
 3. **Classify** every result (§4).
@@ -86,23 +86,23 @@ same date/time handling, the steps just before and after the fixed one. Read the
 | The other direction / the mirror action | moved later → moved earlier; add → delete; create → edit |
 | Success path next to a fixed error path, and the other error paths | after a 409 toast fix: other 4xx/422 messages, and a normal save still closes the dialog |
 | Controls after the fixed moment | locked-during-loading fix → re-enabled after success and after failure; close still works with nothing changed |
-| Other surfaces that use the same code | a shared form used in onboarding **and** the profile dialog; a resource used by web and mobile; list, details, dialog, history, export, PDF, payslip |
+| Other surfaces that use the same code | a shared form used in onboarding **and** the profile dialog; a resource used by web and mobile; list, details, dialog, history, export, PDF, generated documents (invoices, statements, payslips) |
 | Other roles on both sides of a permission fix | the role that must now be hidden **and** the roles that must still see it |
 | Data side effects | rows the action writes (history/audit, counters, quota), recomputed values (pro-rated hours, totals), other records sharing the value |
 | Variants of the flow | create / onboarding / bulk / subscription variant fixed in only one of them |
 | Repeats and sequences | the fixed action twice in a row; fixed action then delete / revert |
-| Language / RTL | Arabic UI copy and layout of the changed surface |
+| Language / layout direction | every supported language's copy and layout of the changed surface (incl. right-to-left if the product supports one) |
 
 Group the charters by screen / flow into sessions. Write them into the retest record before running them.
 
 ## 4. Run and classify
 
-**Run in the in-app browser pane** (`mcp__Claude_Browser__*`) so the user can watch — never headless scripts for UI checks.
+**Run in a browser the user can watch** (whatever browser-automation tool the session has, e.g. a built-in browser pane or a browser extension) — never headless scripts for UI checks.
 Read-only DB queries from the shell are fine for verification. API calls can run inside the signed-in tab (`fetch` with the
 page's token) so the token never leaves the browser.
 
 - Verify every claim against the live DOM **and** the data store (stored values, history rows, call logs).
-- Capture network responses for each probed action (hook XHR / fetch, or read the pane's network log) so what the UI shows
+- Capture network responses for each probed action (hook XHR / fetch, or read the browser tool's network log) so what the UI shows
   can be compared with what the API returned.
 - Free exploration is the point: when something looks off, follow it — keep notes per charter.
 
@@ -118,13 +118,13 @@ Existing behaviour outside the change is **not** a regression — note it as an 
 ## 5. Report and tracker actions
 
 Present per bug: verdict (with the discriminating evidence), neighbours checked, findings with ready reproduction steps,
-observations, not covered. Then ask **one** question for the run, e.g. "Close IS-1 and IS-2, return IS-3?".
+observations, not covered. Then ask **one** question for the run, e.g. "Close PROJ-1 and PROJ-2, return PROJ-3?".
 
-After the go-ahead (follow the project's own Jira rules — they win over this list):
+After the go-ahead (follow the project's own tracker rules — they win over this list):
 
 - **Fixed, no regression** → close. Use the project's convention: either no comment, or the retest comment from
-  [templates/jira-retest-comment.md](templates/jira-retest-comment.md) ("Retest on {env}, {date}: fixed." + steps + result
-  + "Also checked around the fix: …"). Discover the transition id (`getTransitionsForJiraIssue`) — names differ per
+  [templates/tracker-retest-comment.md](templates/tracker-retest-comment.md) ("Retest on {env}, {date}: fixed." + steps + result
+  + "Also checked around the fix: …"). Discover the available transitions from the tracker — names differ per
   project ("Done", "Testing is Done", …).
 - **Not fixed / partly fixed** → comment what still reproduces (steps, expected, actual, what passes), @mention the
   developer, reassign to the developer who moved it to In Testing, transition to the project's reopen state
@@ -132,8 +132,8 @@ After the go-ahead (follow the project's own Jira rules — they win over this l
 - **Regression or new defect in the neighbourhood** → do not file, do not close silently. Present it and ask whether it is a
   bug, whether it blocks closing this ticket, and whether to file it. Record the ruling, e.g. "Not a bug — same behaviour on
   the live app".
-- **Comments state the problem only** — no root cause, no suggested fix. Use the tracker's rich format (ADF mention for
-  Jira); build long comments in a file, not inline shell strings.
+- **Comments state the problem only** — no root cause, no suggested fix. Use the tracker's rich format so the @mention
+  notifies (e.g. Jira ADF, Azure DevOps HTML, GitHub Markdown); build long comments in a file, not inline shell strings.
 - After every write, read the issue back and confirm the status / assignee changed.
 
 ## 6. Output — the retest record
@@ -148,8 +148,8 @@ named for the bug or the run.
 ## 7. Access and test-data rules
 
 - **Logins:** the user signs in; you never type passwords, never read them out of account files, never print tokens.
-  If a session expired, ask the user to sign in in the pane, then continue from the page's own token.
-  Tenant logins via an admin "wild-card password" (where the product has one) are single-use: generate a fresh one each login.
+  If a session expired, ask the user to sign in in the browser, then continue from the page's own token.
+  Admin "log in as" / support-access credentials (where the product has them) may be single-use: generate a fresh one each login.
   Passwords set during onboarding go into the project's `test-accounts.local.md`, never into chat.
 - **Shared environments:** check nobody else is mid-test (UAT, another tester) before closing cycles, running tenant-wide
   jobs or restoring backups. Use far-future dates or dedicated records to stay out of others' way.
@@ -159,12 +159,12 @@ named for the bug or the run.
   create ("QA <KEY> verify"). **After:** delete or restore what you created, read back to confirm, and list what could not
   be removed (no API, locked by a closed cycle, …).
 - **Never press a button that commits an irreversible business action** to "open" something (complete onboarding, pay,
-  approve a payrun, send). Observe gates; do not submit them. Never fill payment / bank / IBAN fields.
+  approve a pay run or an order, send). Observe gates; do not submit them. Never fill payment / bank / card fields.
 - **Deleting shared records may be refused by the safety layer** — do not work around it; report what is left.
-- **Pick fixtures from real data** (read-only queries), and check that each one can reach the state you need (hire dates,
-  contract coverage, one-change-per-period rules, payslip locks) before writing anything.
+- **Pick fixtures from real data** (read-only queries), and check that each one can reach the state you need (start dates,
+  coverage periods, one-change-per-period rules, locked periods) before writing anything.
 
-## 8. Pane mechanics that bit us
+## 8. Browser-automation mechanics that bite
 
 - Dialogs re-centre when their content changes; re-read element positions (`getBoundingClientRect`) after every change
   instead of reusing coordinates. An emulated viewport shifts coordinates too — reset it, or click by element ref.
@@ -174,26 +174,21 @@ named for the bug or the run.
 - Helpers defined in the page (`window.api = …`) are lost on every full navigation — redefine them after navigating.
 - A tab may keep a hidden step's inputs in the DOM; read the active step / tab before trusting a value.
 
-## 9. Worked examples
+## 9. Worked examples (patterns from past runs)
 
-- **Retest + Jira, Wathq Integration (IS-7833), 1 Nov 2026** — four In Testing bugs (IS-8097, IS-8098, IS-8099, IS-8102)
-  retested in the pane, commented and moved to Done. IS-8097: the company from the failed retest was onboarded before the
-  fix and still showed the old state, so a fresh company was created to prove the fix.
-  Record: `D:\Idaratech\Wathq Integration\Manual Execution\Retest IS-7833 In Testing - 2026-11-01.md`.
-- **Regression charters, same story** (run that day as a separate pass over 18 closed bugs; in this skill it is done per bug):
-  5 sessions — S1 client edit dialog (6 bugs), S2 official data card + labels (3), S3 admin details / history / list (4),
-  S4 admin edit / duplicate / clear (3), S5 onboarding + subscription (2). No regression traced to a fix; two findings
-  ruled not a bug by the user; Not covered: Pending/Suspended data, outage stub, a second admin session.
-  Log: `D:\Idaratech\Wathq Integration\Manual Execution\Exploratory regression - closed bugs - 2026-11-01.md`
-  — read it as the reference output.
-- **Discriminating fixture, Mid-Period Salary Change (IS-8042), 22 Oct 2026** — the first fixture's timesheet row was dated
-  before the effective date, so the old build would also have passed. Late-imported punches produced a row dated after it;
-  the retest then proved the row survived, the Employee View showed the days, the settlement counted 14 h and the payslip
-  paid 738.50. Record: `D:\Idaratech\Mid-Period Salary Change\execution\regression-2026-10-22b.md`.
-- **Regression found the real gap, IS-8048, 22 Oct 2026** — the bug's own steps passed, but the charter's "same shared form,
-  other order of actions" probe showed that choosing the Contract Type after the dates cleared the check. Returned to the
-  developer with the path; fixed and closed after the next retest.
-- **Fix only on a pre-prod branch, IS-8073, 27 Oct 2026** — `git branch -r --contains` showed the fix only on
-  `preprod-canary`, so it was tested on pre-prod with the canary routing header; mirror direction, repeated moves, delete
-  and the neighbouring IS-8063 path all probed; the "moved earlier" case was left as a labelled prediction because the
-  activation job is tenant-wide. Record: `D:\Idaratech\Mid-Period Salary Change\execution\regression-2026-10-27.md`.
+- **Fix proven on fresh data** — four In Testing bugs of one story were retested, commented and closed. For one of them the
+  record from the failed retest had been created before the fix and still showed the old state, so a fresh record was
+  created to prove the fix.
+- **Regression charters grouped into sessions** — 18 closed bugs of one story were grouped into 5 sessions by screen
+  (edit dialog, data card + labels, admin details / history / list, admin edit / duplicate / clear, onboarding +
+  subscription). No regression traced to a fix; two findings were ruled "not a bug" by the user; Not covered: records in
+  two states with no data, an outage stub, a second admin session. Keep such a log as the reference output for the project.
+- **Discriminating fixture** — the first fixture's record was dated before the change's effective date, so the old build
+  would also have passed. Importing late data produced a record dated after it; the retest then proved the record survived
+  and that every downstream surface (detail view, totals, generated document) used it.
+- **Regression found the real gap** — the bug's own steps passed, but the charter's "same shared form, other order of
+  actions" probe showed that choosing one field after the dates cleared the check. Returned to the developer with the
+  path; fixed and closed after the next retest.
+- **Fix only on a pre-production branch** — `git branch -r --contains` showed the fix only on a canary branch, so it was
+  tested there with the canary routing header. The mirror direction, repeated moves, delete and a neighbouring path were
+  all probed; one case was left as a labelled prediction because the job that would trigger it runs for the whole tenant.

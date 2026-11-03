@@ -481,11 +481,14 @@ options.setAutoAcceptAlerts(true);
 public void handlePermissionDialog(boolean allow) {
     try {
         if (driver instanceof AndroidDriver) {
-            String buttonText = allow ? "Allow" : "Deny";
-            driver.findElement(AppiumBy.xpath(
-                "//android.widget.Button[@text='" + buttonText + "']"
-            )).click();
+            // Resource ids work in every device language; button text does not
+            String buttonId = allow
+                ? "com.android.permissioncontroller:id/permission_allow_button"
+                : "com.android.permissioncontroller:id/permission_deny_button";
+            driver.findElement(AppiumBy.id(buttonId)).click();
         } else if (driver instanceof IOSDriver) {
+            // iOS system alerts are labelled in the device language: set the "language" / "locale"
+            // capabilities, or use the label of the language you test in
             String buttonLabel = allow ? "Allow" : "Don't Allow";
             driver.findElement(AppiumBy.accessibilityId(buttonLabel)).click();
         }

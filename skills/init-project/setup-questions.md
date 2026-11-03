@@ -15,8 +15,8 @@ Ask each question, then fill in CLAUDE.md placeholders:
 9. **Test management tool?** (Qmetry / TestRail / Zephyr) → {TEST_TOOL}
 10. **Design tool and location?** (e.g., Figma at figma.com/file/abc) → {DESIGN_TOOL_AND_LOCATION}
 11. **PRD location?** (Notion / Confluence link) → {PRD_LINK_OR_PATH}
-12. **Primary business entity?** (e.g., Loan Request, Shift) → {ENTITY}, {RELATED_ENTITY}
-13. **Module path?** (e.g., HR > Loans, Shifts) → {MODULE}
+12. **Primary business entity?** (e.g., Order, Invoice, Booking) → {ENTITY}, {RELATED_ENTITY}
+13. **Module path?** (e.g., Sales > Orders, Billing > Invoices) → {MODULE}
 
 After all answered: Replace ALL placeholders, remove Appendix A/B/C (setup guides).
 If user provided URLs → auto-save to project-references.md.

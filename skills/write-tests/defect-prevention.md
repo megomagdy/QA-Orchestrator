@@ -34,9 +34,9 @@ Build `data-variants.md` once per feature from this checklist, and mark each sha
 | **Repetition** | the same change applied twice in one period; a change and then its reversal; a setting switched A → B → A |
 | **Correction of the past** | a record in a closed period changed later (cancelled, edited, refunded): do reports, history and totals for that period show frozen or recalculated values? |
 | **In flight at release** | drafts saved, requests pending and changes scheduled before the release, then opened, approved or run after it |
-| **Entity variants** | every kind of related entry the rule reads (e.g. for a calendar: working day, day off, holiday, a day with only overtime, a day with no plan) |
+| **Entity variants** | every kind of related entry the rule reads (e.g. for a calendar: working day, day off, holiday, a day with only extra entries, a day with no plan) |
 | **Range extremes** | shortest and longest allowed range; "no limit" types with a very long range; whether a maximum exists at all; a range spanning a period boundary |
-| **Locked periods** | the same action on a record in an open period and in a closed / locked one (payroll, attendance, accounting); every surface that shows it afterwards |
+| **Locked periods** | the same action on a record in an open period and in a closed / locked one (invoicing, payroll, accounting, reporting); every surface that shows it afterwards |
 | **Same-day steps** | two automatic or manual changes landing on the same day (a policy change and a credit, a year end and a renewal) and the order they apply in |
 | **Domain attributes** | eligibility-relevant attributes the spec doesn't name but the domain implies (religion, nationality, marital status, age, contract type), including empty values |
 

@@ -9,7 +9,7 @@ description: |
 
 ## Purpose
 
-This skill enables systematic, trustworthy verification of web application UI elements by inspecting the live DOM through Chrome browser tools (Claude in Chrome MCP). It was born from a real scenario where test cases referenced buttons that didn't exist (e.g., an "Add" button on a Settlements page that was never there), causing invalid test cases and eroding trust in the QA suite.
+This skill enables systematic, trustworthy verification of web application UI elements by inspecting the live DOM through whatever browser-automation tool the session has (a built-in browser, a browser extension, Playwright or Selenium MCP). It was born from a real scenario where test cases referenced buttons that didn't exist (e.g., an "Add" button on a Reports page that was never there), causing invalid test cases and eroding trust in the QA suite.
 
 The core insight: **never trust documentation or config files about what UI elements exist — always verify against the live DOM.**
 
@@ -25,7 +25,7 @@ The core insight: **never trust documentation or config files about what UI elem
 
 ### Phase 1: Preparation
 
-1. **Confirm browser access**: Ensure Claude in Chrome MCP is connected and you have a valid tab ID
+1. **Confirm browser access**: ensure a browser-automation tool is connected and you have a page / tab to work in
 2. **Identify target URL**: Get the base URL and ensure you're logged in with the right role (typically the highest-privilege role like Owner/Admin for full visibility)
 3. **List all modules/pages** to audit — get the complete scope upfront
 
@@ -33,10 +33,10 @@ The core insight: **never trust documentation or config files about what UI elem
 
 For each module/page:
 
-1. **Navigate** to the page URL using `navigate` tool
-2. **Wait** 2-3 seconds for Angular/React SPAs to finish rendering
+1. **Navigate** to the page URL with the browser tool's navigate action
+2. **Wait** for the page to finish rendering (single-page apps such as Angular, React or Vue often need 2–3 seconds after navigation)
 3. **Take a screenshot** to visually confirm the page loaded correctly
-4. **Run a JavaScript audit script** via `javascript_tool` to extract:
+4. **Run a JavaScript audit script** with the browser tool's evaluate / run-JavaScript action to extract:
 
 ```javascript
 // Standard audit script — adapt selectors to your app
@@ -120,12 +120,12 @@ Present results as a table with one row per module:
 | Module | URL | Verified Buttons | Verified Tabs | Discrepancies |
 |--------|-----|-----------------|---------------|---------------|
 | Home | /app/home | Display Code, row icons | — | Spec area not present in DOM |
-| Settlements | /app/settlements | Filter, eye icon only | — | NO Add/Edit (spec says Add, Edit) |
+| Reports | /app/reports | Filter, eye icon only | — | NO Add/Edit (spec says Add, Edit) |
 ```
 
 ## Case Study — the classes of ghost element to expect
 
-From an audit of an enterprise ERP platform. The module names are illustrative; the **failure classes** are what recur everywhere:
+From an audit of a large multi-module business application. The module names are illustrative; the **failure classes** are what recur everywhere:
 
 - **Action that never existed**: spec said `['View', 'Add', 'Edit']`; reality was `['View']` only — no Add button had ever shipped.
 - **Wrong interaction model**: spec described tables with per-row action buttons; reality was a card-based service interface with no such buttons at all.

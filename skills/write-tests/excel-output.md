@@ -1,12 +1,12 @@
-# Test Management Excel Output Format
+# Test Management Import File Format (spreadsheet / CSV)
 
-> **This file documents the RULES for building a multi-row import file, using a Qmetry 25-column template as the worked example. If your team uses a different tool (TestRail, Zephyr, Xray, Azure Test Plans...), the same rules apply — but copy the headers/columns from YOUR tool's real template instead.**
+> **This file documents the RULES for building a multi-row import file, using a 25-column template from one test-management tool as the worked example. Whatever tool your team uses (TestRail, Zephyr, Xray, Azure Test Plans, Qmetry, …), the same rules apply — but copy the headers/columns from YOUR tool's real template instead.**
 
 **Sheet name:** `TestCases` (or whatever your template uses)
 
 **CRITICAL: If a test-import template file exists in the project root (registered by `/init-workspace` or `/init-project`), read it FIRST and copy its headers, column order, and styling exactly. NEVER rename, reorder, or add/remove columns.**
 
-**Example row 1 headers — Qmetry format (25 columns):**
+**Example row 1 headers — one tool's 25-column template (yours will differ):**
 
 ```
 Work Key | Summary | Description | Precondition | Status | Priority | Assignee | Reporter | Estimated Time | Labels | Components | Sprint | Fix Versions | Step Summary | Test Data | Expected Result | Version | Folder | TestCase Type | Created By | Created On | Updated By | Updated On | Story Linkages | Is Shareable Step
@@ -72,4 +72,4 @@ Row N+3: [empty] [Summary] [Precondition] [Priority] ... [Step 1] [Test Data] [ 
 | P0/P1 | `High` |
 | P2/P3 | `Medium` |
 
-Save as: `TC-[feature-name]-[YYYY-MM-DD].xlsx`
+Save as: `TC-[feature-name]-[YYYY-MM-DD].<ext>` in the format your tool imports (e.g. `.xlsx`, `.csv`)

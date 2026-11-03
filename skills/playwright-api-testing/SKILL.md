@@ -508,7 +508,7 @@ test('should respond within acceptable time', async ({ request }) => {
 test.describe.parallel('Isolated API tests', () => {
   test('test A creates and deletes user A', async ({ request }) => {
     const res = await request.post('/users', {
-      data: { email: `a-${Date.now()}@test.com`, name: 'A', password: 'Pass123!' },
+      data: { email: `a-${Date.now()}@example.com`, name: 'A', password: 'Pass123!' },
     });
     const user = await res.json();
     await request.delete(`/users/${user.id}`);
@@ -516,7 +516,7 @@ test.describe.parallel('Isolated API tests', () => {
 
   test('test B creates and deletes user B', async ({ request }) => {
     const res = await request.post('/users', {
-      data: { email: `b-${Date.now()}@test.com`, name: 'B', password: 'Pass123!' },
+      data: { email: `b-${Date.now()}@example.com`, name: 'B', password: 'Pass123!' },
     });
     const user = await res.json();
     await request.delete(`/users/${user.id}`);
