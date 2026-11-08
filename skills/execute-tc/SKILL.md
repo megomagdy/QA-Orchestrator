@@ -16,7 +16,9 @@ anything generic here.
 
 Supporting files: [ui-mechanics.md](ui-mechanics.md) (recovery and UI-automation mechanics) ·
 [preconditions-and-unblocking.md](preconditions-and-unblocking.md) · [defects.md](defects.md) ·
-[handover.md](handover.md) (preparing cases for a person, command blocks, the handoff file, the closing report).
+[candidates-guide.md](candidates-guide.md) (the candidates index and the reproduction guide: structure, step style,
+rulings, evidence, layer) · [handover.md](handover.md) (preparing cases for a person, command blocks, the handoff file,
+the closing report).
 
 ## Values this skill takes from the project files
 
@@ -29,6 +31,10 @@ and write the answer into the project files so the next session does not ask aga
 | Working list and results file: location and format | one working-list file and one results file per cycle, in the project folder |
 | Bug queue: location and one-line format | the file the batch bug-filing skill (if available) is configured to read; otherwise ask once |
 | Evidence folder and file naming | an evidence folder per cycle, files named after the case or bug id |
+| Candidates index and reproduction guide: location | `candidates.md` and `candidates-detailed.md` next to the results file |
+| Default account for reproduction steps | the product's primary everyday account (e.g. the account owner); ask once if unclear |
+| Evidence the user records for confirmed bugs | one folder, one file per candidate id (`<CAND-id>.<ext>`) |
+| Decisions log (where general rulings are written) | the project's review or decisions file; ask once if none |
 | Handoff file | one handoff file per cycle, in the project folder |
 | Safe option values for screens that can commit a business action (§0.4) | ask once, before the first such screen |
 | Off-limits accounts, records and data reserved for another cycle or tester | treat every record this run did not create as read-only |
@@ -73,6 +79,9 @@ and write the answer into the project files so the next session does not ask aga
     file-edit tools. If one tool returns identical results for different targets (e.g. databases, tenants, accounts),
     suspect the tool before reporting.
     **Why:** shells rewrite quotes, escapes and newlines, so the stored evidence silently differs from what was seen.
+    Scripted bulk edits of states or rulings anchor on the item's own id (a candidate id, a case id at the start of its
+    row), never on a value other rows can share; assert one match per id and list the result after.
+    **Why:** two candidates often point at the same case, so a match on the case id silently changes the wrong one.
 
 ## 1. Choose the mode
 
@@ -110,7 +119,7 @@ Run the steps with literal values. Capture evidence on every failure and on ever
 | **Pass** | every expected result was observed |
 | **Fail** | an expected result was not observed — and the Fail maps to one of: a confirmed bug, a known bug, a candidate, or "not raised — pre-existing" |
 | **Blocked** | only by a **named** failed case that this case depends on |
-| **Not complete** | could not finish for any other reason; say exactly what it needs and from whom |
+| **Not complete** | could not finish for any other reason; say exactly what it needs and from whom. A step the user decides to skip is recorded as "skipped by the user's decision on <date>" and does not by itself keep the case here |
 | **Not applicable** | the case does not apply to this build or environment, with the reason |
 
 Map these to the test-management tool's own statuses as listed in the project files; a tool may lack some of them, so
@@ -127,6 +136,14 @@ actions only another team can perform — are in [preconditions-and-unblocking.m
 A deviation becomes a candidate, the user rules on it, and only a confirmed bug reaches the bug queue — checks, the
 candidate brief, the bug entry and the pre-handover re-verification are in [defects.md](defects.md). No root cause and no
 fix suggestion on a bug. The batch bug-filing skill, if available, files the queue later.
+
+- Write each candidate into **both** the candidates index and the reproduction guide, in the structure of
+  [candidates-guide.md](candidates-guide.md): self-contained sections, one action per step, literal data inline, the
+  default account unless another role is needed. The user reproduces and records evidence from the guide alone.
+- **After every ruling**, record it with who, date and reason in both files, write a general ruling to the decisions log,
+  and re-derive every affected case's status and the handoff counts ([defects.md](defects.md) §4.1).
+- **Confirmed bugs** get an evidence file per candidate id (checked 1:1) and a Frontend / Backend layer tag
+  ([candidates-guide.md](candidates-guide.md) §4–5).
 
 ## 6. Upload and import files
 
