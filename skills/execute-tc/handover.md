@@ -53,6 +53,8 @@ the user asks for.
 
 - Coverage: "N of M ran", with the count per status.
 - What was added: confirmed bugs and new candidates, each with its id in the bug queue or defect index.
+- Rulings: candidates confirmed (with the Frontend / Backend / both split and evidence status), dropped (each with its
+  reason) and still open. Counts are recomputed after the last ruling, by script from the results file.
 - Every **Blocked** case with the failed case that blocks it.
 - Every **Not complete** case with exactly what it needs and from whom.
 - Environment changes still in place, and the account left signed in.
