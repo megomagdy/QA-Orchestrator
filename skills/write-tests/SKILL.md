@@ -91,6 +91,13 @@ TC ID: `E{epic#}-{type}-{seq}` — Types: P=Positive (incl. Happy), N=Negative, 
 ### Step 5: Self-Validation
 See [validation-checklist.md](validation-checklist.md) for the full self-validation checklist.
 
+**Value consistency sweep (mandatory, before output).** The coverage gate proves every clause has a case; it doesn't prove that the values a step expects agree with every rule governing them. For every case that asserts a counter, balance or "X of Y" around a state change (period change, reset, year end, scheduled start, refund, offboarding):
+- list each asserted quantity and EVERY clause that acts on it in that record state, not only the clauses the case cites (a quantity owned by another behaviour brings that behaviour's clauses, and the case's description cites them);
+- recompute the expected value from the combined rules with the case's own dates and data;
+- check that the case states every date those rules read (a request's submission date, not only its leave dates; the credit day of a migrated record), and that any "run on any day from X to Y" window doesn't cross a reset unless the values cover both sides.
+Split the cases between two or more reviewers who did not write them. A real conflict between two clauses is decided and recorded as in Step 2a.
+**Why:** on one feature, a listing rule ("a request in two periods shows under both") was used for a counter that a more specific rule excluded. A developer found it during execution. A sweep of 52 similar cases then found 9 more: a value crossing a yearly reset, an arithmetic slip, a run window crossing the reset, and four unstated submission dates.
+
 ## Agent Orchestration
 - **Small scope (< 5 stories):** Write directly in main context, no agents.
 - **Large scope (5+ stories):** Build the behaviour inventory (Step 2b) in main context FIRST, then spawn tc-writer agents with disjoint B-ID lists for parallel generation. Also spawn security-scanner and a11y-auditor for specialized TCs (skip any category the project has removed). After agents return, merge all TCs and run self-validation in main context. The duplicate gate (below) must pass before output.
