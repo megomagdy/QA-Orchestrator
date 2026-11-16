@@ -95,7 +95,12 @@ See [validation-checklist.md](validation-checklist.md) for the full self-validat
 - list each asserted quantity and EVERY clause that acts on it in that record state, not only the clauses the case cites (a quantity owned by another behaviour brings that behaviour's clauses, and the case's description cites them);
 - recompute the expected value from the combined rules with the case's own dates and data;
 - check that the case states every date those rules read (a request's submission date, not only its leave dates; the credit day of a migrated record), and that any "run on any day from X to Y" window doesn't cross a reset unless the values cover both sides.
+- check every action a step performs, including setup and triggers borrowed from another behaviour (delete, edit, turn off, assign, submit): is it allowed for that record in that state (seeded vs company-created, locked, used, off, scheduled, past, ineligible, permission held)? A step that needs a message for a refused action uses a record the refusal actually applies to;
+- re-apply the visibility rules (listed, offered, shown, hidden, enabled) after every state change the case itself made before asserting what is "still" shown.
 Split the cases between two or more reviewers who did not write them. A real conflict between two clauses is decided and recorded as in Step 2a.
+
+**Writing-time decisions:** call a clause "silent" only after reading the whole section (sentences under tables, notes, examples, the message table) and the implementation's guard (permission map, validation, route), and quote both in the decision's basis.
+**Why:** a decision recorded as "spec silent" missed the sentence under the permissions table that settled it, and the backend already did the opposite. Separately, a case deleted a seeded type that can't be deleted to trigger a "used type" message, and another asserted a type was "still listed" after the case had made the employee ineligible.
 **Why:** on one feature, a listing rule ("a request in two periods shows under both") was used for a counter that a more specific rule excluded. A developer found it during execution. A sweep of 52 similar cases then found 9 more: a value crossing a yearly reset, an arithmetic slip, a run window crossing the reset, and four unstated submission dates.
 
 ## Agent Orchestration
