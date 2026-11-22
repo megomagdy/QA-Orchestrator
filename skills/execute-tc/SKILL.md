@@ -99,6 +99,18 @@ The **test cycle in the test-management tool is the unit of work.**
    meaningless (the app is down, the session expired, the environment is wrong).
 5. **Stale cases found mid-run:** fix the case at its source, push it to the tool (after the user's yes, §0.1), refresh
    the copies not yet run, and tell the user which already-run copies need a manual step sync.
+6. **Cases added mid-run.** When the user asks to cover an area and the cycle has no case for some of its rules, write
+   the missing cases through the test-writing process (clause matrix, behaviour inventory, prevention pass and gates),
+   not ad hoc. Tell the user, before running them, which cases are new, which rules they cover, and that they are **not
+   in the test-management tool yet**. Ask to push them before filing any bug that cites them, so every bug points at a
+   case that exists in the cycle.
+   **Why:** new cases were written and run for an area the user named, and three bugs were filed against them while they
+   existed only locally. The user then found bugs "not in the test cycle" and asked why.
+7. **Check the environment is still the one you set up.** Shared test environments get reset. At the start of every
+   session, and before relying on records kept from an earlier run, check that they still exist (their ids, the newest
+   id, a known record). If they are gone, say so: which kept setups and which filed bugs refer to records that no
+   longer exist.
+   **Why:** a data reset dropped every kept repro setup, and three filed bugs quoted request ids that no longer existed.
 
 ## 3. Run each case and record a status
 

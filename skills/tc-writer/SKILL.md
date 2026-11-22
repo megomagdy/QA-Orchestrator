@@ -49,6 +49,8 @@ Negative + Boundary + Edge combined must be at least 30% — negative alone typi
 - Steps must name real UI elements ("Click Save"), not generic actions ("submit the form").
 - The final expected result names the distinguishing outcome (what was blocked / allowed / stored / shown, with the value) — two opposite-outcome cases never end in the same sentence.
 - When the feature replaces existing behaviour and code is available, every branch of the current code is a clause you cover or mark superseded.
+- Before handing back, check your behaviours against the four commonly missed clause kinds and report any gap in the "not covered" list: other features' transitions acting on your records **and their reversal** (cancel after completion, reopen, reactivate); permission × action × level for every action touched, including existing write endpoints whose input changed and what each permission level lists and opens; every surface each persona uses (an approver's mobile screen is separate from a requester's); each consumer by name (each report, export, file, PDF, notification).
+- A setup state you rely on must be reachable in the product (settings that lock after setup, transitions not offered); if not, report it as deferred with the reason instead of writing the case.
 - Cross-story case: every story key in Story Linkages plus an `also-<KEY>` label.
 - Preconditions must be specific and reproducible, and must carry any eligibility gate the feature has. The first precondition line is `Access: <Portal> as <Role>` (several separated by `;`, or `Access: none`), plain text inside the Precondition cell — never a new column.
 - Get validation timing right — state WHERE validation fires (on input, on blur, on save, at submission).
