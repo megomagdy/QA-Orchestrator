@@ -68,16 +68,58 @@ function authHeader() {
 const INLINE_RE =
   /(\*\*[^*]+\*\*|__[^_]+__|\*[^*\n]+\*|_[^_\n]+_|`[^`]+`|\[[^\]]+\]\([^)]+\))/g;
 
+// Auto-linking of bare text (set per call from config by setLinkContext):
+// every bare http(s) URL becomes a link, and every issue key of the project
+// (e.g. IS-7883) links to <siteUrl>/browse/<key>. Text already written as
+// [text](url) is left as it is.
+let LINK_CTX = { siteUrl: null, keyRe: null };
+
+function setLinkContext(config) {
+  const opts = (config && config.trackerOptions) || {};
+  const siteUrl = opts.siteUrl ? String(opts.siteUrl).replace(/\/+$/, "") : null;
+  const prefixes = [config && config.projectKey, ...(opts.linkKeyPrefixes || [])].filter(Boolean);
+  LINK_CTX = {
+    siteUrl,
+    keyRe: siteUrl && prefixes.length ? new RegExp(`\\b(?:${prefixes.join("|")})-\\d+\\b`) : null,
+  };
+}
+
+const BARE_URL_RE = /https?:\/\/[^\s<>()\[\]]+/;
+
+function autoLink(text) {
+  const out = [];
+  let rest = text;
+  while (rest) {
+    const u = rest.match(BARE_URL_RE);
+    const k = LINK_CTX.keyRe ? rest.match(LINK_CTX.keyRe) : null;
+    const m = [u, k].filter(Boolean).sort((a, b) => a.index - b.index)[0];
+    if (!m) { out.push({ type: "text", text: rest }); break; }
+    let tok = m[0];
+    let href;
+    if (m === u) {
+      tok = tok.replace(/[.,;:!?'"’”]+$/, ""); // trailing punctuation is not part of the URL
+      href = tok;
+    } else {
+      href = `${LINK_CTX.siteUrl}/browse/${tok}`;
+    }
+    if (m.index > 0) out.push({ type: "text", text: rest.slice(0, m.index) });
+    out.push({ type: "text", text: tok, marks: [{ type: "link", attrs: { href } }] });
+    rest = rest.slice(m.index + tok.length);
+  }
+  return out;
+}
+
 function inlineNodes(text) {
   if (!text) return [];
   const out = [];
   let last = 0;
   for (const m of text.matchAll(INLINE_RE)) {
-    if (m.index > last) out.push({ type: "text", text: text.slice(last, m.index) });
+    if (m.index > last) out.push(...autoLink(text.slice(last, m.index)));
     const tok = m[0];
     if (tok.startsWith("**") || tok.startsWith("__")) {
       out.push({ type: "text", text: tok.slice(2, -2), marks: [{ type: "strong" }] });
     } else if (tok.startsWith("`")) {
+      // Code spans are never auto-linked.
       out.push({ type: "text", text: tok.slice(1, -1), marks: [{ type: "code" }] });
     } else if (tok.startsWith("[")) {
       const link = tok.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
@@ -91,7 +133,7 @@ function inlineNodes(text) {
     }
     last = m.index + tok.length;
   }
-  if (last < text.length) out.push({ type: "text", text: text.slice(last) });
+  if (last < text.length) out.push(...autoLink(text.slice(last)));
   return out.filter((n) => n.text !== "");
 }
 
@@ -245,6 +287,7 @@ module.exports = {
 
   // Exported for local testing of the markdown->ADF conversion.
   _mdToAdf: mdToAdf,
+  _setLinkContext: setLinkContext,
 
   requiredEnv: ["ATLASSIAN_EMAIL", "ATLASSIAN_API_TOKEN"],
 
@@ -258,6 +301,7 @@ module.exports = {
       );
     }
 
+    setLinkContext(config);
     const fields = {
       project: { key: config.projectKey },
       issuetype: { name: config.issueTypeName || "Bug" },
@@ -301,6 +345,23 @@ module.exports = {
     }
 
     return JSON.parse(text).key;
+  },
+
+  // Replace the description of an issue that already exists (used by
+  // report-bugs.js --update). Same markdown -> ADF conversion as createIssue.
+  async updateDescription(config, issueKey, markdown) {
+    const cloudId = (config.trackerOptions || {}).cloudId;
+    setLinkContext(config);
+    const res = await fetch(`${API(cloudId)}/issue/${issueKey}`, {
+      method: "PUT",
+      headers: {
+        Authorization: authHeader(),
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({ fields: { description: mdToAdf(markdown) } }),
+    });
+    if (!res.ok) throw new Error(`Jira API ${res.status}: ${(await res.text()).slice(0, 300)}`);
   },
 
   async addAttachments(config, issueKey, filePaths) {

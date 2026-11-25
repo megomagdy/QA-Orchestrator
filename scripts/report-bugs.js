@@ -19,6 +19,10 @@
  *   node report-bugs.js --all --no-prompt   # Report all using defaults (no questions)
  *   node report-bugs.js --dry-run --all     # Preview without creating
  *   node report-bugs.js --init              # Generate a starter config file
+ *   node report-bugs.js --update --epic 2 --bug 23   # Re-push the description of a REPORTED bug
+ *   node report-bugs.js --update --keys E2-B23,E4-B27 # ...of several reported bugs
+ *       (--update reads bug-descriptions.json and replaces the issue's description;
+ *        add --dry-run to preview. Needs an adapter with updateDescription().)
  *
  * Interactive mode (default):
  *   For each bug, the script shows the details and asks you to confirm/edit:
@@ -69,6 +73,18 @@ const ENV_FILE = [
   USER_ENV_FILE,
   LEGACY_ENV_FILE,
 ].find((p) => p && fs.existsSync(p)) || USER_ENV_FILE;
+
+// Every existing .env in the same order. A key is taken from the first file
+// that defines it, so a project .env without tracker keys (e.g. one holding
+// only database settings) no longer hides the tracker credentials kept in a
+// later file. A variable already set in the shell always wins.
+const ENV_FILES = [
+  path.join(PROJECT_DIR, ".env"),
+  path.join(path.dirname(PROJECT_DIR), ".env"),
+  process.env.QA_SECRETS_FILE,
+  USER_ENV_FILE,
+  LEGACY_ENV_FILE,
+].filter((p, i, a) => p && a.indexOf(p) === i && fs.existsSync(p));
 
 // ─── Init command ────────────────────────────────────────────────────────────
 
@@ -186,8 +202,8 @@ function loadEnv(adapter) {
     console.warn(`WARNING: credentials found inside the global QA folder (${LEGACY_ENV_FILE}).`);
     console.warn(`Move them to ${USER_ENV_FILE} (or set QA_SECRETS_FILE) so they are not copied with the folder.`);
   }
-  if (fs.existsSync(ENV_FILE)) {
-    const lines = fs.readFileSync(ENV_FILE, "utf-8").split("\n");
+  for (const file of ENV_FILES) {
+    const lines = fs.readFileSync(file, "utf-8").split("\n");
     for (const line of lines) {
       const trimmed = line.trim();
       if (!trimmed || trimmed.startsWith("#")) continue;
@@ -195,7 +211,7 @@ function loadEnv(adapter) {
       if (eqIndex === -1) continue;
       const key = trimmed.slice(0, eqIndex).trim();
       const val = trimmed.slice(eqIndex + 1).trim();
-      process.env[key] = val;
+      if (!process.env[key]) process.env[key] = val;
     }
   }
 
@@ -204,6 +220,7 @@ function loadEnv(adapter) {
   const missing = required.filter((k) => !process.env[k]);
   if (missing.length > 0) {
     console.error(`ERROR: Missing credentials for adapter "${adapter.name || "unknown"}": ${missing.join(", ")}`);
+    console.error(`Looked in: ${ENV_FILES.length ? ENV_FILES.join(" ; ") : "(no .env file found)"}`);
     console.error(`Add them to a .env file in the folder you run from, the project root, or your per-user file: ${USER_ENV_FILE}`);
     console.error(`(or point QA_SECRETS_FILE at another file outside the global QA folder).`);
     console.error(`See .env.example next to this script.`);
@@ -533,6 +550,45 @@ async function main() {
   const reported = loadReported();
   const overrides = loadOverrides();
   const descriptions = loadDescriptions();
+
+  // --update: replace the description of bugs that were already reported,
+  // e.g. after fixing links or wording in bug-descriptions.json.
+  if (args.includes("--update")) {
+    const keysIdx = args.indexOf("--keys");
+    let keys = [];
+    if (keysIdx !== -1) {
+      keys = String(args[keysIdx + 1] || "").split(",").map((s) => s.trim()).filter(Boolean);
+    } else if (targetEpic && targetBug) {
+      keys = [`E${targetEpic}-B${targetBug}`];
+    } else {
+      console.error("ERROR: --update needs --keys E2-B23,E3-B26 or --epic N --bug M.");
+      process.exit(1);
+    }
+    const adapter = dryRun ? null : loadAdapter(config);
+    if (adapter && typeof adapter.updateDescription !== "function") {
+      console.error(`ERROR: adapter "${adapter.name}" has no updateDescription().`);
+      process.exit(1);
+    }
+    if (adapter) loadEnv(adapter);
+    let ok = 0, failed = 0;
+    for (const key of keys) {
+      const rec = reported[key];
+      const desc = descriptions[key];
+      if (!rec || !rec.issueKey) { console.log(`  SKIP ${key} — not in reported-bugs.json`); failed++; continue; }
+      if (!desc || !desc.description) { console.log(`  SKIP ${key} — no description in bug-descriptions.json`); failed++; continue; }
+      if (dryRun) { console.log(`  [DRY] ${rec.issueKey} <- ${key} (description ${desc.description.length} chars)`); continue; }
+      try {
+        await adapter.updateDescription(config, rec.issueKey, desc.description);
+        console.log(`  ${rec.issueKey} <- ${key} description updated`);
+        ok++;
+      } catch (err) {
+        console.error(`  ERROR ${key}: ${err.message}`);
+        failed++;
+      }
+    }
+    console.log(`\n  Done: ${ok} updated, ${failed} skipped/failed.\n`);
+    return;
+  }
 
   // Filter unreported bugs
   let toReport = bugs.filter((b) => !reported[b.key]);

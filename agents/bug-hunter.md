@@ -26,7 +26,7 @@ For each unique bug:
 - **Affected TCs:** list of TC IDs that hit this bug
 - **Steps to reproduce:** extracted from the failed TC
 - **Expected vs Actual:** from TC data
-- **Evidence:** screenshot paths, error messages, console logs
+- **Evidence:** screenshot paths, error messages, console logs; recording URLs, the environment URL and the URL of each record named by id given as markdown links `[text](url)` so the description is clickable
 - **Isolation notes:** what does NOT trigger the bug
 - **Bug Summaries.txt line:** a ready-to-append one-liner for `Manual Execution/Bug Summaries.txt` (`Bug {next-number}: <summary>` with `(back end)` suffix if BE), plus the target evidence filename per the convention (`Epic {n}/Bug {m}.png`)
 
