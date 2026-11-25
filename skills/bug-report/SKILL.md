@@ -42,6 +42,12 @@ When writing a bug report, reference the evidence file paths from this folder. W
 
 After the user confirms a bug is real, ALSO append it as a one-liner to `Manual Execution/Bug Summaries.txt` under the correct Epic section (`Bug {next-number}: <summary>` with `(back end)` suffix if BE) — this is the input queue for `/report-bugs`, which creates the tracker issues in batch with zero API tokens. Skip this only if the user wants the bug reported immediately and individually.
 
+## From a candidates reproduction guide
+
+When the bug comes from a `/execute-tc` candidate, its reproduction-guide section is the source: copy its Account
+(as Preconditions/user role), Steps, Expected and Actual as written, link its evidence file, and use its Layer tag for the
+queue's back-end marker. Don't re-derive the steps from the test case. Skip dropped or parked candidates.
+
 ## Rules
 - One bug per ticket. Group related failures to same root cause.
 - A bug raised from a failing test case copies that step's exact state and data (do not swap in a different example state — a partial fix then passes verification), and "Affected TCs" names the case AND the failing step number, not every case in the area.

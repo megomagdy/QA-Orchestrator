@@ -121,11 +121,16 @@ PHASE 4: MANUAL & MCP EXECUTION
   contains it. Statuses: Pass, Fail, Blocked (only by a named failed
   case), Not complete, Not applicable, mapped to your tool's own;
   coverage is reported as "N of M ran". Deviations become candidates
-  that you rule on; confirmed bugs go to the bug queue the project
+  that you rule on, written to a candidates index and a reproduction
+  guide (self-contained steps, one action each, literal data inline,
+  default account) so you can reproduce and record evidence alone.
+  Each ruling is recorded with its reason and re-derives the affected
+  case statuses; confirmed bugs get an evidence file per candidate and
+  a Frontend/Backend layer tag, then go to the bug queue the project
   files define, ready for /report-bugs. A 5-step UI recovery runs
   before any case is given up as Not complete.
-  Output: working list, results file with evidence, defect index,
-  handoff file and a closing report.
+  Output: working list, results file with evidence, candidates index,
+  reproduction guide, handoff file and a closing report.
 
 
 PHASE 5: REPORTING
