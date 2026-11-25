@@ -26,7 +26,8 @@ Build `data-variants.md` once per feature from this checklist, and mark each sha
 | **Lifecycle position** | new (just created), mid-life, joining / starting inside a period, leaving / ending inside a period, already ended, deactivated / archived / deleted, reinstated |
 | **Cardinality** | none, exactly one, many, the maximum; two records that share a value users think is unique (name, number, code) |
 | **Completeness** | every optional field empty; a required-looking field missing in legacy data; a configuration never set |
-| **Origin** | created through every entry point (UI, bulk upload, API, migration, import); created **before** the release (legacy rows, in-flight drafts) |
+| **Origin** | created through every entry point (UI, bulk upload, API, migration, import, mobile, chat assistant); created **before** the release (legacy rows, in-flight drafts) |
+| **Persona × surface** | each persona that sees or acts on the record (requester, approver, administrator, the record's subject) on each surface they use (web, mobile, chat, email) |
 | **Account / environment** | a brand-new account or tenant with no history and no reference data; a long-lived one with real data; a non-eligible one (feature gated off) |
 | **Content** | very long values, special characters, right-to-left / mixed-direction text, leading or trailing spaces, case differences |
 | **Volume** | empty list, one page, many pages, the size limit |
@@ -93,6 +94,14 @@ Each action having its own case is not enough; bugs live in the order.
   notifications, schedules, derived records, cached values). Leftovers are the bug.
 - Include going back in a multi-step wizard after changing an earlier step, and re-reading any count or summary the
   later step shows.
+- **Transitions owned by other features count.** When another feature can change this entity (a deactivation, a
+  termination, a period close, an archive), its transitions join the diagram, **with their reversal**: cancel after
+  completion, reopen, reactivate, undo. After the reversal, re-check this entity's status, balances and schedule.
+  **Why:** a sequence case covered "terminate → record closed" but not "terminate → cancel the termination"; the
+  record stayed closed and nothing was ever collected for someone who stayed.
+- **Every setup state must be reachable in the product.** Before a sequence depends on changing a setting or taking a
+  transition, check the product still allows it (some settings lock after first setup). An unreachable state is
+  deferred with the screen text or guard as the reason.
 
 ## P5 — Visual comparison case per new screen (4 of 42)
 
@@ -107,6 +116,11 @@ Read the rendered design, not layer names.
 - When a decision lands or changes: update the expected results **and the fixtures** (a fixture built for the old rule
   may never reach the new path), and re-run cases that already passed under the old rule.
 - Record the change in the decision log with the cases it touched.
+- **A decision that arrives after the cases are written can add behaviour, not only change it.** Run it through the
+  clause matrix: every new reach, scope or allowed state it introduces becomes a clause and a case (e.g. "permission X
+  now covers every record" needs a case for a user who holds X without the wider view permission).
+- **A question held open "without assumptions" stays in the matrix** as deferred clauses (one per part of the question),
+  so the gap is visible and gets cases the day it is answered.
 
 ## P7 — Every clause maps to an asserting step, including its implied negative (3 of 42)
 
@@ -120,6 +134,10 @@ Read the rendered design, not layer names.
   app) for **every existing reader** of them: reports, exports, dashboards, limit checks, summaries, notifications,
   other modules, mobile, integrations.
 - Each reader gets at least one regression case, even if no document mentions it.
+- **List readers one by one, never by category.** "Reports and exports are unaffected" covers none of them: each
+  report, export file, generated document, notification and integration is its own row and its own step.
+- **Writes count too.** For every write endpoint the feature changes (a new field on an existing create, a new state
+  on an existing update), check permission enforcement on the server again, not only on the new endpoints.
 - Run the suite once on a **brand-new account / tenant** as well as on an established one.
 
 ---

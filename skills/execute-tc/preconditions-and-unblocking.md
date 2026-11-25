@@ -16,6 +16,12 @@ reversible writes, and the off-limits data listed in the project files.
   content is machine-readable, and that it does not clash with existing records (e.g. the same identity, phone number or
   email).
 - **Fixture ledger:** check the record's remaining quotas, lockouts and temporary grants (SKILL.md §2) before choosing it.
+- **The state must be reachable in the product.** Before forcing a precondition through the API or the database, check
+  that a user can reach it in the app (some settings lock after first setup; some transitions are never offered). If not,
+  the case tests an impossible state: record it as **not reachable**, with the screen text or guard as evidence, and send
+  the case back to the suite as a deferred clause. Change nothing.
+  **Why:** a case needed a setting changed after setup. The setup page said the value "cannot be edited later" and
+  refused the change; forcing it through the API would have tested a state no user can create.
 
 ## 2. Writing data to unblock a case
 
@@ -30,6 +36,15 @@ reversible writes, and the off-limits data listed in the project files.
 - **Removing rows your own run created through the app is cleanup, not fabrication.** Capture them by id, dump them
   first, and verify the counts against a before/after snapshot.
 - **Prefer a fresh test record created through the app** over repairing a broken or stuck one, when the user agrees.
+- **Temporary configuration for setup** (an approval chain, a workflow step, a feature switch): write the rollback note
+  first, then change → create the records → restore in one script (restore in a `finally` block), and read the setting
+  back. Prefer settings the app freezes onto the record at creation (a chain copied onto each request), so the shared
+  setting is changed for minutes, not for the whole run.
+- **Use the product's own assignment path for roles and access.** Assign roles through the service that issues the
+  user's permissions (the one the admin screen uses), then sign in again and confirm the user reaches the page before
+  judging any permission result.
+  **Why:** a role assigned through a lower-level identity call left the user with no module access; every page showed
+  Access Denied and the first results had to be discarded.
 - **Rebuild a missing pre-release baseline from version control** (check out the earlier build or its data definitions)
   rather than guessing what it looked like.
 
@@ -50,7 +65,19 @@ reversible writes, and the off-limits data listed in the project files.
   as two results.
   **Why:** a hidden button with an open endpoint is still a permission defect.
 
-## 5. Data that belongs to someone else
+## 5. Account states that affect sign-in and access
+
+- **Sign in first, then change the account's state.** Actions on a test account (termination, deactivation, suspension,
+  role removal) can revoke its app access or its session. When a case needs a signed-in user in such a state, have the
+  person sign in, then apply the state change, and run the step without restarting the app.
+- **When a sign-in fails, check the account before blaming the case.** Look up the user in the identity or user service
+  (does the record exist, which modules and roles does it carry). An environment reset can leave an employee without an
+  account, which looks like an access rule. If the account is broken, switch to another account that meets the case
+  and record the switch.
+- **An undo may not restore everything.** After cancelling a state change (cancel a termination, restore a role), check
+  the account is back as it was (active, eligible, roles) and fix what the undo missed.
+
+## 6. Data that belongs to someone else
 
 - **Never touch data reserved for another cycle or tester** unless the user explicitly permits it, and then only with a
   written undo plan that is run afterwards.

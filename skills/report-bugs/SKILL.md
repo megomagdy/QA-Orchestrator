@@ -199,6 +199,24 @@ Write all results to `bug-descriptions.json`:
 
 **IMPORTANT:** Only write entries for UNREPORTED bugs. Preserve any existing entries.
 
+#### Links: everything that can be a link is a link (Added: 2026-11-25)
+
+The QA lead wants every reference in a description to be clickable. Write these as markdown links `[text](url)`:
+
+| What | Link to | Example |
+|------|---------|---------|
+| Recording / evidence URL (Jam, Loom, drive file) | the URL itself | `[https://jam.dev/c/…](https://jam.dev/c/…)` |
+| Environment | the app's base URL from the config | `[https://m.billing…/hr](https://m.billing…/hr)` |
+| Parent story and any related issue | `<siteUrl>/browse/<KEY>` | `[IS-7883](https://idaratech.atlassian.net/browse/IS-7883)` |
+| Record the steps name by id (request, loan, payrun, employee) | that record's details page on the test environment, when its route is known | `[15502](https://…/hr/requests/15502/details)` |
+| Tracker ticket a step depends on (earlier bug, dev-task) | `<siteUrl>/browse/<KEY>` | `[IS-8342](…/browse/IS-8342)` |
+
+The Jira adapter also turns any **bare** `https://…` URL and any bare issue key of the project (`projectKey`, plus `trackerOptions.linkKeyPrefixes`) into a link. Explicit markdown links are still preferred, because only they can link record ids and use readable text. Take record routes from a URL you saw in the app, the frontend route constants or the recording, never a guess (a guessed deep link silently redirects to the home page). Text inside backticks is never linked.
+
+#### Step numbering must survive the tracker's list rendering
+
+Bold sub-headings (`**A. Approve**`) between numbered steps split them into separate lists, and Jira restarts each list at 1. So either number the steps continuously with no sub-heading between them, or restart at 1 for each part and refer to steps as "Part A step 2", never "Step 5". Before showing the confirmation table, check that every "step N" reference in Expected / Actual / Evidence points at a step that renders with that number.
+
 ### Step 5: Write overrides file
 
 Write the auto-detected parents and priorities to `bug-overrides.json`:
@@ -255,6 +273,21 @@ The script handles:
 
 **This is the key optimization:** All tracker API calls happen in the script (zero LLM tokens), while Claude only spent tokens on the intelligent part (reading bugs, detecting parents, writing overrides).
 
+**Reporting only some of the unreported bugs:** do NOT move lines out of `Bug Summaries.txt`. Run the script once per bug with `--epic N --bug M --no-prompt`. It files only that bug and marks only that line.
+
+**Credentials:** the script merges every `.env` it finds, in this order: the Manual Execution folder, the project root, `QA_SECRETS_FILE`, then `~/.qa-global/.env`. Each key comes from the first file that defines it, and a variable already set in the shell wins. A project `.env` that holds only database settings therefore no longer hides the tracker keys. If keys are still missing, the error lists the files it read. Point `QA_SECRETS_FILE` at the file that has the tracker keys (for Idaratech, a project's `Manual Execution/.env` such as `D:\Idaratech\Loans\Manual Execution\.env`). Never print the values.
+
+### Step 7b: Changing a bug that is already filed
+
+To fix links, wording or steps after creation, edit the bug's entry in `bug-descriptions.json`, then re-push it with the script. Do not use tracker MCP edit tools for this: the script uses the same markdown conversion (and auto-linking) as creation.
+
+```bash
+node "$QA_GLOBAL_HOME/scripts/report-bugs.js" --update --keys E2-B23,E4-B27 --dry-run   # preview
+node "$QA_GLOBAL_HOME/scripts/report-bugs.js" --update --keys E2-B23,E4-B27             # replace descriptions
+```
+
+`--update --epic N --bug M` works for a single bug. Only bugs listed in `reported-bugs.json` are touched. Back up `bug-descriptions.json` first, then read one updated issue back from the tracker to confirm the result.
+
 ### Step 8: Report results
 
 Read the script's stdout output and display:
@@ -307,3 +340,4 @@ Bug 1: Some other bug
 3. **Never re-report** — always check `reported-bugs.json` and `[REPORTED:]` markers
 4. **Parent story is required** — don't create bugs without a parent if the project uses subtasks
 5. **Overrides file is the bridge** — Claude writes `bug-overrides.json`, script reads it for parent/priority per bug
+6. **Every reference is a link** — recordings, environment, story, related issues and named records (see Step 4 › Links). Changes after filing go through `--update`, not manual edits in the tracker.

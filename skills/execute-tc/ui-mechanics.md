@@ -33,7 +33,22 @@ overlays, error dialogs from a previous failure.
   action whose confirmation or error may disappear before the next capture.
 - **One-character-per-box inputs** (e.g. one-time codes): type box by box, then read every box back before submitting.
 
-## 3. Evidence the screen cannot give
+## 3. Mobile devices and sign-in handover
+
+- **Stale data on a device.** A mobile app may show cached data after a change made elsewhere (a cancelled request still
+  "pending"). Pull to refresh or reopen the screen before judging; note that restarting the app can sign the user out.
+- **Launch screens.** A test build may download an update at launch and sit on a progress screen; wait for it before the
+  first step.
+- **Preparing a sign-in for the person.** Fill only the non-secret fields (email or phone, workspace), clear any secret
+  left from an earlier attempt, dismiss password-manager prompts without choosing an entry, and stop at the password
+  field. The person types the secret and taps the button.
+- **Fields that append.** Clear a text field (select all, delete) before typing a new value; some inputs keep the old
+  text and append the new one.
+- **Debug panels show secrets.** In-app network inspectors and debug overlays display request bodies, including
+  passwords and tokens. Never capture them on purpose; if a capture shows a secret, delete the file at once, never quote
+  it, and capture the screen again only after scrolling the secret out of view or closing the panel.
+
+## 4. Evidence the screen cannot give
 
 - **Capture network responses before each action** (e.g. hook the page's request functions, or read the tool's network
   log), so the API's answer can be compared with what the screen shows.

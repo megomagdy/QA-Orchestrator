@@ -50,6 +50,9 @@ description: Condensed rules from all 16 QA skills. Load THIS instead of individ
 - Every calculation, ordering rule and displayed column gets a worked example in Confirmed Behaviors (2.1 #32).
 - Push the whole report to the questions tracker (questions, unmapped conflicts, decision findings, one combined design entry); re-query and match the inventory (2.1 #33).
 - Judge tracker answers by content, not the Status field; check "as today" answers against today's code (2.1 #34).
+- Parity testing: compare every screen of the flow on both channels plus a reference provider, section by section — identical API data is not parity (11.3 #142).
+- Parity compares concept and data only; layout/label/style differences are not gaps (11.3 #143).
+- An empty field for a new provider → check how each screen renders "empty" (fallback / hidden / broken) (11.3 #144).
 
 ## 2. Test Case Design Rules (from: unified-qa, test-plan-generation)
 - TC ID: E{epic#}-{type}-{seq}. Types: P=Positive, N=Negative, E=Edge, S=Security, L=Localization.
@@ -148,6 +151,8 @@ description: Condensed rules from all 16 QA skills. Load THIS instead of individ
 - Invariants enforced only in application code need API-level negative tests; inspect the actual indexes rather than assuming.
 - A stored column and the API value can differ — trace which one the UI reads before asserting staleness.
 - Static code review can predict per-case pass/fail when execution is blocked — label it a prediction, never a result. Developer comments often reveal spec-vs-implementation conflicts.
+- Search caches: search → quote/revalidate → same search; compare every result's price for that provider — re-cached marked-up results double the markup (6.3 #39).
+- Reproduce UI-visible API issues with the page's exact request body (different body = different cache key) (11.3 #145).
 
 ## 8. Bug Report Rules (from: bug-report-writing)
 - Exports and reports may read the raw entity row rather than the calculated result items — verify the source of every reported figure.
@@ -167,6 +172,8 @@ description: Condensed rules from all 16 QA skills. Load THIS instead of individ
 - Issue-tracker markdown fields need Markdown headings, not wiki markup — wiki syntax renders as literal text.
 - Some create APIs HTML-escape quotes in the summary field; set the title in the follow-up edit call or avoid quotes.
 - Confirm assignee identity before filing — directories return many near-matches and display names differ from how people are written in notes.
+- Search the tracker for duplicates before filing; a Closed bug that still reproduces → ask: new bug + Related link, or reopen (11.3 #148).
+- Reporter: evidence not named `Bug N…` needs explicit `attachments`; the ADO adapter doesn't set Severity, board column or Related — PATCH after create (11.3 #149).
 
 ## 9. CI/CD Rules (from: ci-cd-pipeline-config)
 - Run tests on every PR.
@@ -320,3 +327,6 @@ description: Condensed rules from all 16 QA skills. Load THIS instead of individ
 - 10.133: The lexical duplicate gate is a tripwire, not a review. Always do a reading pass per behaviour group (now in /write-tests Duplicate Gate). (Section 7.1)
 - 10.134: Parallel agents sharing a tool with a fixed temp file overwrite each other. Give each run its own temp directory (and browser profile). (Section 11)
 - 10.135: `node -e` through bash strips regex backslashes and still parses. Write any edit that touches a regex as a script file, not an inline `node -e`. (Section 11)
+- 10.142: Re-verify automation-reported UI failures by hand (read the input back) before logging a candidate. (Section 7)
+- 10.143: Record and restore every shared-environment setting changed during a run; list leftovers in the report. (Section 11)
+- 10.144: New provider: open every provider picker/label; an unrecognised code must never render as "All". (Section 6.3 #40)
